@@ -104,23 +104,22 @@
 
     <div class="app-container">
 
-        <!-- Coluna 1: Perguntas Frequentes -->
         <div id="sidebar" class="panel">
             <h2>Perguntas Frequentes</h2>
             <ul id="quick-questions-list">
-                <li>Como funciona a portabilidade?</li>
+                <li>Como funciona a portabilidade de PIX com débito?</li>
                 <li>Quero fazer a exclusão da minha conta</li>
-                <li>Problema no login do app</li>
+                <li>Como cancelar um plano da calculadora?</li>
+                <li>Estou com problema no login do app</li>
+                <li>O que fazer se caí na malha fina?</li>
             </ul>
         </div>
 
-        <!-- Coluna 2: Chatbot -->
         <div class="chat-container">
             <div class="chat-box" id="chat-box">
-                <div class="bot-msg message">Olá! Sou o assistente de atendimento.</div>
+                <div class="bot-msg message">Olá! Sou o assistente de atendimento. Use os menus ou digite sua dúvida.</div>
             </div>
 
-            <!-- ÁREA DE PERGUNTAS RÁPIDAS (CAIXAS) - ATUALIZADA -->
             <div id="quick-actions-container">
                 <h3>Ações Rápidas</h3>
                 <div class="quick-actions-grid">
@@ -136,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Coluna 3: Notícias da Semana -->
         <div id="news-panel" class="panel">
             <h2>Notícias da Semana</h2>
             <div id="news-list">
@@ -158,7 +156,7 @@
             // Sua URL do Google Apps Script
             const API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec"; 
 
-            // --- Função para Adicionar Mensagens na Tela ---
+            // Função para Adicionar Mensagens na Tela
             function addMessage(message, sender) {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
@@ -167,7 +165,7 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
 
-            // --- Função para Buscar Respostas do Chatbot ---
+            // Função para Buscar Respostas do Chatbot
             async function buscarResposta(textoDaPergunta) {
                 if (textoDaPergunta.trim() === "") return;
                 try {
@@ -181,7 +179,7 @@
                 }
             }
 
-            // --- Função para Carregar Notícias ---
+            // Função para Carregar Notícias
             async function carregarNoticias() {
                 try {
                     const response = await fetch(`${API_URL}?acao=buscar_noticias`);
@@ -204,14 +202,14 @@
                 }
             }
             
-            // --- Função de Envio Principal ---
+            // Função de Envio Principal
             function handleSendMessage(text) {
                 if (!text || !text.trim()) return;
                 addMessage(text, 'user');
                 buscarResposta(text);
             }
 
-            // --- Event Listeners (Ouvintes de Ação) ---
+            // Event Listeners (Ouvintes de Ação)
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -232,7 +230,7 @@
                 }
             });
 
-            // --- Ativação Inicial ---
+            // Ativação Inicial
             carregarNoticias();
         });
     </script>
