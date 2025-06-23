@@ -27,9 +27,9 @@
         .input-area { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
         #user-input { flex-grow: 1; padding: 14px; border-radius: 24px; border: 1px solid var(--cor-azul-claro); font-size: 16px; outline: none; }
         #user-input:focus { border-color: var(--cor-azul-medio); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
-        .message { margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
+        .message { position: relative; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%); color: #FFFFFF; margin-left: auto; }
-        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; }
+        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; } /* Espaço para o botão */
         #quick-actions-container { padding: 15px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
         #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
         .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -51,9 +51,27 @@
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-6px); }
         }
+
+        /* --- ESTILO PARA O BOTÃO DE COPIAR --- */
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #555;
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+        .bot-msg:hover .copy-btn {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
+
     <div class="app-container">
         <div id="sidebar" class="panel">
             <h2>Perguntas Frequentes</h2>
@@ -85,36 +103,96 @@
         <div id="news-panel" class="panel">
             <h2>Notícias da Semana</h2>
             <div id="news-list">
-                
                 <div class="news-item">
                     <h4>Ajude-nos a melhorar com seu feedback!</h4>
                     <small>Publicado em: 20/06/2025</small>
-                    <p>Estamos trabalhando para tornar nossos processos na Velotax ainda mais claros e eficientes, e precisamos da sua ajuda! Criamos um formulário rápido para entender suas dúvidas e sugestões. Suas respostas vão virar materiais e treinamentos que vão facilitar o dia a dia de todos! 🚀
-Por quê? Para criar conteúdos que realmente ajudem o time.
-Tempo? Só uns 5 minutinhos! ⏰
-Sua participação faz toda a diferença! Qualquer dúvida, é só chamar. 😊
-Obrigado pelo apoio! .</p>
+                    <p>Estamos trabalhando para tornar nossos processos na Velotax ainda mais claros e eficientes, e precisamos da sua ajuda! Criamos um formulário rápido para entender suas dúvidas e sugestões. Suas respostas vão virar materiais e treinamentos que vão facilitar o dia a dia de todos! 🚀 Por quê? Para criar conteúdos que realmente ajudem o time. Tempo? Só uns 5 minutinhos! ⏰ Sua participação faz toda a diferença! Qualquer dúvida, é só chamar. 😊 Obrigado pelo apoio!</p>
                     <h2>Link no grupo de avisos</h2>
                 </div>
-                
-                </div>
+            </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Referências aos Elementos
             const chatBox = document.getElementById('chat-box');
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
-            // A referência a newsList não é mais necessária, mas não há problema em mantê-la.
-            
-            // Apenas UMA API agora, a do chatbot.
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec"; 
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec";
 
-            function toggleLoader(show) { /* ...código do loader sem alteração... */ }
-            function addMessage(message, sender) { /* ...código sem alteração... */ }
+            function toggleLoader(show) {
+                const existingLoader = document.getElementById('loader');
+                if (show) {
+                    if (!existingLoader) {
+                        const loaderElement = document.createElement('div');
+                        loaderElement.id = 'loader';
+                        loaderElement.classList.add('loader-container');
+                        loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+                        chatBox.appendChild(loaderElement);
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                } else {
+                    if (existingLoader) { existingLoader.remove(); }
+                }
+            }
+            
+            // --- FUNÇÃO addMessage ATUALIZADA COM O BOTÃO COPIAR ---
+            function addMessage(message, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
+                messageElement.innerHTML = message;
+
+                if (sender === 'bot') {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.classList.add('copy-btn');
+                    copyBtn.innerHTML = '📋';
+                    copyBtn.title = 'Copiar resposta';
+                    
+                    copyBtn.onclick = (e) => {
+                        e.stopPropagation(); // Evita que outros eventos de clique sejam disparados
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = message;
+                        const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
+
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            copyBtn.innerHTML = '✅';
+                            copyBtn.title = 'Copiado!';
+                            setTimeout(() => {
+                                copyBtn.innerHTML = '📋';
+                                copyBtn.title = 'Copiar resposta';
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('Falha ao copiar:', err);
+                            // Fallback para o método antigo
+                            try {
+                                const textArea = document.createElement("textarea");
+                                textArea.value = textToCopy;
+                                document.body.appendChild(textArea);
+                                textArea.focus();
+                                textArea.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(textArea);
+
+                                copyBtn.innerHTML = '✅';
+                                copyBtn.title = 'Copiado!';
+                                setTimeout(() => {
+                                    copyBtn.innerHTML = '📋';
+                                    copyBtn.title = 'Copiar resposta';
+                                }, 2000);
+
+                            } catch (fallbackErr) {
+                                console.error('Falha no fallback de cópia:', fallbackErr);
+                                copyBtn.innerText = 'Erro!';
+                            }
+                        });
+                    };
+                    messageElement.appendChild(copyBtn);
+                }
+
+                chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
             
             async function buscarResposta(textoDaPergunta) {
                 if (textoDaPergunta.trim() === "") return;
@@ -148,8 +226,8 @@ Obrigado pelo apoio! .</p>
 
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
-
-            // A função carregarNoticias() foi removida.
+            
+            // Note: A função carregarNoticias() foi removida pois as notícias agora são manuais.
         });
     </script>
 </body>
