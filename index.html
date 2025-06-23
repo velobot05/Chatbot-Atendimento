@@ -29,7 +29,7 @@
         #user-input:focus { border-color: var(--cor-azul-medio); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         .message { position: relative; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%); color: #FFFFFF; margin-left: auto; }
-        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; } /* Espaço para o botão */
+        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; } /* Espaço para o botão copiar */
         #quick-actions-container { padding: 15px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
         #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
         .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -47,27 +47,18 @@
         .typing-dot { width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing-animation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
+        @keyframes typing-animation { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
 
-        /* --- ESTILO PARA O BOTÃO DE COPIAR --- */
-        .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: #555;
-            opacity: 0.3;
-            transition: opacity 0.2s ease;
-        }
-        .bot-msg:hover .copy-btn {
-            opacity: 1;
-        }
+        /* --- ESTILOS PARA BOTÃO DE COPIAR E FEEDBACK --- */
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #555; opacity: 0.3; transition: opacity 0.2s ease; }
+        .bot-msg:hover .copy-btn { opacity: 1; }
+        .feedback-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .feedback-container span { font-size: 13px; color: #555; }
+        .feedback-btn { font-size: 18px; background: transparent; border: none; cursor: pointer; transition: transform 0.2s ease; }
+        .feedback-btn:hover { transform: scale(1.2); }
+        .suggestion-form { margin-top: 10px; display: flex; gap: 8px; width: 100%; }
+        .suggestion-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
+        .suggestion-form button { border: 1px solid var(--cor-azul-medio); background: var(--cor-azul-medio); color: white; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -106,7 +97,7 @@
                 <div class="news-item">
                     <h4>Ajude-nos a melhorar com seu feedback!</h4>
                     <small>Publicado em: 20/06/2025</small>
-                    <p>Estamos trabalhando para tornar nossos processos na Velotax ainda mais claros e eficientes, e precisamos da sua ajuda! Criamos um formulário rápido para entender suas dúvidas e sugestões. Suas respostas vão virar materiais e treinamentos que vão facilitar o dia a dia de todos! 🚀 Por quê? Para criar conteúdos que realmente ajudem o time. Tempo? Só uns 5 minutinhos! ⏰ Sua participação faz toda a diferença! Qualquer dúvida, é só chamar. 😊 Obrigado pelo apoio!</p>
+                    <p>Estamos trabalhando para tornar nossos processos na Velotax ainda mais claros e eficientes, e precisamos da sua ajuda! Criamos um formulário rápido para entender suas dúvidas e sugestões.</p>
                     <h2>Link no grupo de avisos</h2>
                 </div>
             </div>
@@ -119,6 +110,8 @@
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
+            
+            // INSIRA SUA URL DO SCRIPT DE CHAT/FEEDBACK AQUI
             const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec";
 
             function toggleLoader(show) {
@@ -137,59 +130,86 @@
                 }
             }
             
-            // --- FUNÇÃO addMessage ATUALIZADA COM O BOTÃO COPIAR ---
-            function addMessage(message, sender) {
+            function enviarFeedback(feedbackData) {
+                // Envia os dados para a mesma API de chat, que saberá o que fazer por causa do método POST
+                fetch(CHAT_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(feedbackData),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status !== 'sucesso') {
+                        console.error("Erro ao salvar feedback:", data.mensagem);
+                    }
+                })
+                .catch(error => console.error('Erro de rede ao enviar feedback:', error));
+            }
+
+            function addMessage(message, sender, perguntaOriginal = '') {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-                messageElement.innerHTML = message;
+                
+                const messageText = document.createElement('div');
+                messageText.innerHTML = message;
+                messageElement.appendChild(messageText);
 
-                if (sender === 'bot') {
+                if (sender === 'bot' && !message.includes("Olá! Sou o assistente")) {
+                    // Botão de Copiar
                     const copyBtn = document.createElement('button');
                     copyBtn.classList.add('copy-btn');
                     copyBtn.innerHTML = '📋';
                     copyBtn.title = 'Copiar resposta';
-                    
                     copyBtn.onclick = (e) => {
-                        e.stopPropagation(); // Evita que outros eventos de clique sejam disparados
+                        e.stopPropagation();
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = message;
-                        const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
-
-                        navigator.clipboard.writeText(textToCopy).then(() => {
+                        navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
                             copyBtn.innerHTML = '✅';
-                            copyBtn.title = 'Copiado!';
-                            setTimeout(() => {
-                                copyBtn.innerHTML = '📋';
-                                copyBtn.title = 'Copiar resposta';
-                            }, 2000);
-                        }).catch(err => {
-                            console.error('Falha ao copiar:', err);
-                            // Fallback para o método antigo
-                            try {
-                                const textArea = document.createElement("textarea");
-                                textArea.value = textToCopy;
-                                document.body.appendChild(textArea);
-                                textArea.focus();
-                                textArea.select();
-                                document.execCommand('copy');
-                                document.body.removeChild(textArea);
-
-                                copyBtn.innerHTML = '✅';
-                                copyBtn.title = 'Copiado!';
-                                setTimeout(() => {
-                                    copyBtn.innerHTML = '📋';
-                                    copyBtn.title = 'Copiar resposta';
-                                }, 2000);
-
-                            } catch (fallbackErr) {
-                                console.error('Falha no fallback de cópia:', fallbackErr);
-                                copyBtn.innerText = 'Erro!';
-                            }
+                            setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
                         });
                     };
                     messageElement.appendChild(copyBtn);
-                }
 
+                    // Container de Feedback
+                    const feedbackContainer = document.createElement('div');
+                    feedbackContainer.classList.add('feedback-container');
+                    const pergunta = document.createElement('span');
+                    pergunta.innerText = 'Esta resposta foi útil?';
+                    feedbackContainer.appendChild(pergunta);
+
+                    const btnLike = document.createElement('button');
+                    btnLike.classList.add('feedback-btn');
+                    btnLike.innerHTML = '👍';
+                    btnLike.onclick = () => {
+                        enviarFeedback({ pergunta: perguntaOriginal, resposta: message, avaliacao: 'Útil' });
+                        feedbackContainer.innerHTML = '<span style="color:green;">Obrigado pelo feedback!</span>';
+                    };
+                    feedbackContainer.appendChild(btnLike);
+
+                    const btnDislike = document.createElement('button');
+                    btnDislike.classList.add('feedback-btn');
+                    btnDislike.innerHTML = '👎';
+                    btnDislike.onclick = () => {
+                        enviarFeedback({ pergunta: perguntaOriginal, resposta: message, avaliacao: 'Não Útil' });
+                        feedbackContainer.innerHTML = ''; 
+                        const suggestionForm = document.createElement('div');
+                        suggestionForm.classList.add('suggestion-form');
+                        suggestionForm.innerHTML = `<input type="text" placeholder="Como podemos melhorar?" /><button>Enviar</button>`;
+                        const inputSugestao = suggestionForm.querySelector('input');
+                        suggestionForm.querySelector('button').onclick = () => {
+                            const sugestao = inputSugestao.value;
+                            if (sugestao) {
+                                enviarFeedback({ pergunta: perguntaOriginal, resposta: message, avaliacao: 'Não Útil com Sugestão', sugestao: sugestao });
+                            }
+                            feedbackContainer.innerHTML = '<span style="color:green;">Obrigado pela sua sugestão!</span>';
+                        };
+                        feedbackContainer.appendChild(suggestionForm);
+                        inputSugestao.focus();
+                    };
+                    feedbackContainer.appendChild(btnDislike);
+                    messageElement.appendChild(feedbackContainer);
+                }
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -201,8 +221,11 @@
                     const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
                     const data = await response.json();
                     toggleLoader(false);
-                    if (data.status === 'sucesso') { addMessage(data.resposta, 'bot'); } 
-                    else { addMessage(data.mensagem, 'bot'); }
+                    if (data.status === 'sucesso') {
+                        addMessage(data.resposta, 'bot', textoDaPergunta);
+                    } else {
+                        addMessage(data.mensagem, 'bot', textoDaPergunta);
+                    }
                 } catch (error) {
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
@@ -223,11 +246,10 @@
                     handleSendMessage(userInput.value);
                 }
             });
-
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
             
-            // Note: A função carregarNoticias() foi removida pois as notícias agora são manuais.
+            // A função carregarNoticias foi removida pois as notícias agora são manuais.
         });
     </script>
 </body>
