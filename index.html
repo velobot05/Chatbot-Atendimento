@@ -54,7 +54,6 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <div id="sidebar" class="panel">
             <h2>Perguntas Frequentes</h2>
@@ -86,48 +85,38 @@
         <div id="news-panel" class="panel">
             <h2>Notícias da Semana</h2>
             <div id="news-list">
-                <p>Carregando notícias...</p>
-            </div>
+                
+                <div class="news-item">
+                    <h4>Ajude-nos a melhorar com seu feedback!</h4>
+                    <small>Publicado em: 20/06/2025</small>
+                    <p>Estamos trabalhando para tornar nossos processos na Velotax ainda mais claros e eficientes, e precisamos da sua ajuda! Criamos um formulário rápido para entender suas dúvidas e sugestões. Suas respostas vão virar materiais e treinamentos que vão facilitar o dia a dia de todos! 🚀
+
+Link do formulário: https://forms.gle/mG61Ps8ahjBiSMXj7
+Por quê? Para criar conteúdos que realmente ajudem o time.
+Tempo? Só uns 5 minutinhos! ⏰
+Sua participação faz toda a diferença! Qualquer dúvida, é só chamar. 😊
+Obrigado pelo apoio! .</p>
+                    <a href="#" target="_blank">https://forms.gle/mG61Ps8ahjBiSMXj7</a>
+                </div>
+                
+                </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Referências aos Elementos
             const chatBox = document.getElementById('chat-box');
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
-            const newsList = document.getElementById('news-list');
+            // A referência a newsList não é mais necessária, mas não há problema em mantê-la.
             
-            // --- URLs DAS DUAS APIs SEPARADAS ---
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec";
-            const NEWS_API_URL = "https://script.google.com/macros/s/AKfycbwQXNH-hPvY7PM-j-zam_PaxNMdg9M8SlA3xRH82-3eMcRDcC8hwLCC8Z5p3d-4E4G_/exec";
+            // Apenas UMA API agora, a do chatbot.
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec"; 
 
-            function toggleLoader(show) {
-                const existingLoader = document.getElementById('loader');
-                if (show) {
-                    if (!existingLoader) {
-                        const loaderElement = document.createElement('div');
-                        loaderElement.id = 'loader';
-                        loaderElement.classList.add('loader-container');
-                        loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-                        chatBox.appendChild(loaderElement);
-                        chatBox.scrollTop = chatBox.scrollHeight;
-                    }
-                } else {
-                    if (existingLoader) {
-                        existingLoader.remove();
-                    }
-                }
-            }
-            
-            function addMessage(message, sender) {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-                messageElement.innerHTML = message;
-                chatBox.appendChild(messageElement);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
+            function toggleLoader(show) { /* ...código do loader sem alteração... */ }
+            function addMessage(message, sender) { /* ...código sem alteração... */ }
             
             async function buscarResposta(textoDaPergunta) {
                 if (textoDaPergunta.trim() === "") return;
@@ -142,41 +131,6 @@
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
                     addMessage("Erro de conexão com o sistema de respostas.", 'bot');
-                }
-            }
-
-            // --- FUNÇÃO DE CARREGAR NOTÍCIAS (CORRIGIDA E MELHORADA) ---
-            async function carregarNoticias() {
-                 try {
-                    newsList.innerHTML = '<p>Carregando notícias...</p>';
-                    const response = await fetch(NEWS_API_URL);
-                    
-                    // Verifica se a comunicação com a API foi bem-sucedida
-                    if (!response.ok) {
-                        // Se a resposta não for OK (ex: 404, 500), lança um erro com o status
-                        throw new Error(`Erro de rede: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-
-                    // Verifica o status LÓGICO retornado pelo nosso script
-                    if (data.status === 'sucesso' && data.noticias && data.noticias.length > 0) {
-                        newsList.innerHTML = '';
-                        data.noticias.forEach(item => {
-                            const newsDiv = document.createElement('div');
-                            newsDiv.classList.add('news-item');
-                            let linkHtml = item.link && item.link.trim() ? `<a href="${item.link}" target="_blank">Leia mais...</a>` : '';
-                            newsDiv.innerHTML = `<h4>${item.titulo}</h4><small>Publicado em: ${item.data}</small><p>${item.conteudo}</p>${linkHtml}`;
-                            newsList.appendChild(newsDiv);
-                        });
-                    } else {
-                        // Se o status for 'sucesso' mas não houver notícias, ou se for 'erro'
-                        newsList.innerHTML = `<p>Nenhuma notícia encontrada.</p><small style="color:red;">${data.mensagem || ''}</small>`;
-                    }
-                } catch (error) {
-                    // Pega tanto erros de rede quanto erros de processamento do JSON
-                    console.error("Erro detalhado ao buscar notícias:", error);
-                    newsList.innerHTML = `<p style="color:red;"><b>Falha ao Carregar Notícias.</b><br><small>Verifique o console (F12) para detalhes técnicos.</small></p>`;
                 }
             }
             
@@ -197,7 +151,7 @@
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
 
-            carregarNoticias();
+            // A função carregarNoticias() foi removida.
         });
     </script>
 </body>
