@@ -29,7 +29,7 @@
         #user-input:focus { border-color: var(--cor-azul-medio); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         .message { position: relative; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%); color: #FFFFFF; margin-left: auto; }
-        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; } /* Espaço para o botão */
+        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; }
         #quick-actions-container { padding: 15px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
         #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
         .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -47,27 +47,9 @@
         .typing-dot { width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing-animation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
-
-        /* --- ESTILO PARA O BOTÃO DE COPIAR --- */
-        .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: #555;
-            opacity: 0.3;
-            transition: opacity 0.2s ease;
-        }
-        .bot-msg:hover .copy-btn {
-            opacity: 1;
-        }
+        @keyframes typing-animation { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #555; opacity: 0.3; transition: opacity 0.2s ease; }
+        .bot-msg:hover .copy-btn { opacity: 1; }
     </style>
 </head>
 <body>
@@ -79,12 +61,12 @@
                 <li>Como funciona a portabilidade?</li>
                 <li>Quero fazer a exclusão da minha conta</li>
                 <li>Problema no login do app</li>
+                <li>Informação sobre os valores da restituição</li>
             </ul>
         </div>
-
         <div class="chat-container">
             <div class="chat-box" id="chat-box">
-                <div class="bot-msg message">Olá! Sou o assistente de atendimento.</div>
+                <div class="bot-msg message"><span>Olá! Sou o assistente de atendimento.</span></div>
             </div>
             <div id="quick-actions-container">
                 <h3>Ações Rápidas</h3>
@@ -99,17 +81,14 @@
                 <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
             </div>
         </div>
-
         <div id="news-panel" class="panel">
             <h2>Notícias da Semana</h2>
             <div id="news-list">
-                <div class="news-item">
-                    <h4>Ajude-nos a melhorar com seu feedback!</h4>
+                </div>
+                     <h4>Ajude-nos a melhorar com seu feedback!</h4>
                     <small>Publicado em: 24/06/2025</small>
                     <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível. Caso o cliente queira quitar, será com o valor integral. Caso ele não esteja nesse lote, podemos informar para aguardar a liquidação no próximo mês.</p>
                     <h2>Sobre as datas, verifique com um superior!!</h2>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -119,7 +98,17 @@
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec";
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbxKVVuBi-_R4xkoqgOUohry39sdllyVTezuF_1eT0H8DHllialAnMQ9IFyQoHJ3csc/exec";
+
+            // --- INÍCIO DA LÓGICA DE MEMÓRIA CONTEXTUAL ---
+            let ultimoTopico = ''; // Variável para guardar o contexto
+
+            // Lista de frases que indicam uma continuação da conversa
+            const perguntasDeContinuacao = [
+                'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que',
+                'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes'
+            ];
+            // --- FIM DA LÓGICA DE MEMÓRIA CONTEXTUAL ---
 
             function toggleLoader(show) {
                 const existingLoader = document.getElementById('loader');
@@ -136,98 +125,78 @@
                     if (existingLoader) { existingLoader.remove(); }
                 }
             }
-            
-            // --- FUNÇÃO addMessage ATUALIZADA COM O BOTÃO COPIAR ---
+
             function addMessage(message, sender) {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
                 messageElement.innerHTML = message;
-
-                if (sender === 'bot') {
+                if (sender === 'bot' && !message.includes("Olá! Sou o assistente")) {
                     const copyBtn = document.createElement('button');
                     copyBtn.classList.add('copy-btn');
                     copyBtn.innerHTML = '📋';
                     copyBtn.title = 'Copiar resposta';
-                    
                     copyBtn.onclick = (e) => {
-                        e.stopPropagation(); // Evita que outros eventos de clique sejam disparados
+                        e.stopPropagation();
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = message;
-                        const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
-
-                        navigator.clipboard.writeText(textToCopy).then(() => {
+                        navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
                             copyBtn.innerHTML = '✅';
-                            copyBtn.title = 'Copiado!';
-                            setTimeout(() => {
-                                copyBtn.innerHTML = '📋';
-                                copyBtn.title = 'Copiar resposta';
-                            }, 2000);
-                        }).catch(err => {
-                            console.error('Falha ao copiar:', err);
-                            // Fallback para o método antigo
-                            try {
-                                const textArea = document.createElement("textarea");
-                                textArea.value = textToCopy;
-                                document.body.appendChild(textArea);
-                                textArea.focus();
-                                textArea.select();
-                                document.execCommand('copy');
-                                document.body.removeChild(textArea);
-
-                                copyBtn.innerHTML = '✅';
-                                copyBtn.title = 'Copiado!';
-                                setTimeout(() => {
-                                    copyBtn.innerHTML = '📋';
-                                    copyBtn.title = 'Copiar resposta';
-                                }, 2000);
-
-                            } catch (fallbackErr) {
-                                console.error('Falha no fallback de cópia:', fallbackErr);
-                                copyBtn.innerText = 'Erro!';
-                            }
+                            setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
                         });
                     };
                     messageElement.appendChild(copyBtn);
                 }
-
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
             
             async function buscarResposta(textoDaPergunta) {
-                if (textoDaPergunta.trim() === "") return;
+                if (!textoDaPergunta.trim()) return;
                 toggleLoader(true);
                 try {
                     const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
                     const data = await response.json();
                     toggleLoader(false);
-                    if (data.status === 'sucesso') { addMessage(data.resposta, 'bot'); } 
-                    else { addMessage(data.mensagem, 'bot'); }
+
+                    if (data.status === 'sucesso') {
+                        addMessage(data.resposta, 'bot');
+                        // Salva o contexto retornado pela API na nossa variável de memória
+                        ultimoTopico = data.contexto || '';
+                    } else {
+                        addMessage(data.mensagem, 'bot');
+                        ultimoTopico = ''; // Limpa o contexto se a busca falhar
+                    }
                 } catch (error) {
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
                     addMessage("Erro de conexão com o sistema de respostas.", 'bot');
+                    ultimoTopico = ''; // Limpa o contexto em caso de erro
                 }
             }
             
             function handleSendMessage(text) {
                 if (!text || !text.trim()) return;
+                
+                let perguntaFinal = text;
+                const textoNormalizado = text.toLowerCase().trim();
+
+                // Verifica se a pergunta é uma continuação E se temos um tópico guardado na memória
+                if (perguntasDeContinuacao.some(frase => textoNormalizado.startsWith(frase)) && ultimoTopico) {
+                    // Junta a pergunta de continuação com o último tópico para dar contexto à busca
+                    perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
+                } else {
+                    // Se não for uma pergunta de continuação, limpa a memória para evitar confusão futura
+                    ultimoTopico = '';
+                }
+                
                 addMessage(text, 'user');
-                buscarResposta(text);
+                buscarResposta(perguntaFinal); // Envia a pergunta final (com ou sem contexto)
                 if (userInput.value) { userInput.value = ''; }
             }
 
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSendMessage(userInput.value);
-                }
-            });
-
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(userInput.value); } });
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
-            
-            // Note: A função carregarNoticias() foi removida pois as notícias agora são manuais.
         });
     </script>
 </body>
