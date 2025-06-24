@@ -15,8 +15,44 @@
             --cor-azul-escuro: #0056b3;
             --cor-balao-bot: #D6E4FF;
         }
-        body { font-family: 'Arial', sans-serif; background: var(--cor-fundo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .app-container { display: grid; grid-template-columns: 300px 1fr 300px; width: 100%; max-width: 1400px; height: 95vh; gap: 20px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            /* A cor de fundo agora será controlada pelo #particles-js */
+        }
+        
+        /* --- ESTILOS PARA A ANIMAÇÃO DE PARTÍCULAS --- */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0; /* Coloca o fundo atrás de todo o conteúdo */
+            background-color: var(--cor-fundo);
+        }
+        
+        .app-wrapper {
+            position: relative;
+            z-index: 1; /* Garante que o app fique sobre o fundo de partículas */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            width: 100%;
+            max-width: 1400px;
+            height: 95vh;
+            gap: 20px;
+        }
+
         .panel { background: var(--cor-container); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); padding: 24px; display: flex; flex-direction: column; border: 1px solid var(--cor-azul-claro); overflow-y: auto; }
         .panel h2 { margin-top: 0; color: var(--cor-azul-escuro); border-bottom: 2px solid var(--cor-azul-claro); padding-bottom: 10px; font-size: 18px; }
         #quick-questions-list { list-style: none; padding: 0; margin: 0; }
@@ -29,7 +65,7 @@
         #user-input:focus { border-color: var(--cor-azul-medio); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         .message { position: relative; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%); color: #FFFFFF; margin-left: auto; }
-        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; } /* Espaço para o botão */
+        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; }
         #quick-actions-container { padding: 15px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
         #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
         .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -47,71 +83,61 @@
         .typing-dot { width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing-animation {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
-
-        /* --- ESTILO PARA O BOTÃO DE COPIAR --- */
-        .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: #555;
-            opacity: 0.3;
-            transition: opacity 0.2s ease;
-        }
-        .bot-msg:hover .copy-btn {
-            opacity: 1;
-        }
+        @keyframes typing-animation { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #555; opacity: 0.3; transition: opacity 0.2s ease; }
+        .bot-msg:hover .copy-btn { opacity: 1; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div id="sidebar" class="panel">
-            <h2>Perguntas Frequentes</h2>
-            <ul id="quick-questions-list">
-                <li>Como funciona a portabilidade?</li>
-                <li>Quero fazer a exclusão da minha conta</li>
-                <li>Problema no login do app</li>
-            </ul>
-        </div>
+    <div id="particles-js"></div>
 
-        <div class="chat-container">
-            <div class="chat-box" id="chat-box">
-                <div class="bot-msg message">Olá! Sou o assistente de atendimento.</div>
+    <div class="app-wrapper">
+        <div class="app-container">
+            <div id="sidebar" class="panel">
+                <h2>Perguntas Frequentes</h2>
+                <ul id="quick-questions-list">
+                    <li>Como funciona a portabilidade?</li>
+                    <li>Quero fazer a exclusão da minha conta</li>
+                    <li>Problema no login do app</li>
+                </ul>
             </div>
-            <div id="quick-actions-container">
-                <h3>Ações Rápidas</h3>
+
+            <div class="chat-container panel">
+                <div class="chat-box" id="chat-box">
+                    <div class="bot-msg message"><span>Olá! Sou o assistente.</span></div>
+                </div>
+                <div id="quick-actions-container">
+                    <h3>Ações Rápidas</h3>
                 <div class="quick-actions-grid">
                     <button class="quick-action">Portabilidade</button>
                     <button class="quick-action">Juros</button>
                     <button class="quick-action">Retenção da chave pix</button>
                     <button class="quick-action">Desconto proporcional</button>
                 </div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
+                </div>
             </div>
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
-            </div>
-        </div>
 
-        <div id="news-panel" class="panel">
-            <h2>Notícias da Semana</h2>
-            <div id="news-list">
-                <div class="news-item">
-                    <h4>⚠️NOVAS NOTÍCIAS⚠️</h4>
-                    <small>Publicado em: 24/06/2025</small>
-                    <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível. Caso o cliente queira quitar, será com o valor integral. Caso ele não esteja nesse lote, podemos informar para aguardar a liquidação no próximo mês.</p>
-                    <h2>verifique sempre o grupo de avisos!!</h2>
+            <div id="news-panel" class="panel">
+                <h2>Notícias da Semana</h2>
+                <div id="news-list">
+                    <div class="news-item">
+                        <h4>Novas noticías</h4>
+                        <small>Publicado em: 24/06/2025</small>
+                        <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível. Caso o cliente queira quitar, será com o valor integral. Caso ele não esteja nesse lote, podemos informar para aguardar a liquidação no próximo mês.
+
+.</p>
+                        <a href="#">se o cliente questsionar, atenção no que fala!!</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -119,7 +145,7 @@
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbz5duzxWIZ7Dh9ngvdp4-HhxkcTQb_uGuz3RvQ8WyzMu-NwyckeXsUcH-VKiaWZRkbW/exec";
+            const CHAT_API_URL = "SUA_URL_DO_CHAT_AQUI"; // Lembre-se de colocar sua URL do Apps Script aqui
 
             function toggleLoader(show) {
                 const existingLoader = document.getElementById('loader');
@@ -137,7 +163,6 @@
                 }
             }
             
-            // --- FUNÇÃO addMessage ATUALIZADA COM O BOTÃO COPIAR ---
             function addMessage(message, sender) {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
@@ -148,48 +173,17 @@
                     copyBtn.classList.add('copy-btn');
                     copyBtn.innerHTML = '📋';
                     copyBtn.title = 'Copiar resposta';
-                    
                     copyBtn.onclick = (e) => {
-                        e.stopPropagation(); // Evita que outros eventos de clique sejam disparados
+                        e.stopPropagation();
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = message;
-                        const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
-
-                        navigator.clipboard.writeText(textToCopy).then(() => {
+                        navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
                             copyBtn.innerHTML = '✅';
-                            copyBtn.title = 'Copiado!';
-                            setTimeout(() => {
-                                copyBtn.innerHTML = '📋';
-                                copyBtn.title = 'Copiar resposta';
-                            }, 2000);
-                        }).catch(err => {
-                            console.error('Falha ao copiar:', err);
-                            // Fallback para o método antigo
-                            try {
-                                const textArea = document.createElement("textarea");
-                                textArea.value = textToCopy;
-                                document.body.appendChild(textArea);
-                                textArea.focus();
-                                textArea.select();
-                                document.execCommand('copy');
-                                document.body.removeChild(textArea);
-
-                                copyBtn.innerHTML = '✅';
-                                copyBtn.title = 'Copiado!';
-                                setTimeout(() => {
-                                    copyBtn.innerHTML = '📋';
-                                    copyBtn.title = 'Copiar resposta';
-                                }, 2000);
-
-                            } catch (fallbackErr) {
-                                console.error('Falha no fallback de cópia:', fallbackErr);
-                                copyBtn.innerText = 'Erro!';
-                            }
+                            setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
                         });
                     };
                     messageElement.appendChild(copyBtn);
                 }
-
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -201,8 +195,11 @@
                     const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
                     const data = await response.json();
                     toggleLoader(false);
-                    if (data.status === 'sucesso') { addMessage(data.resposta, 'bot'); } 
-                    else { addMessage(data.mensagem, 'bot'); }
+                    if (data.status === 'sucesso') {
+                        addMessage(data.resposta, 'bot');
+                    } else {
+                        addMessage(data.mensagem, 'bot');
+                    }
                 } catch (error) {
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
@@ -217,18 +214,19 @@
                 if (userInput.value) { userInput.value = ''; }
             }
 
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSendMessage(userInput.value);
-                }
-            });
-
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(userInput.value); } });
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
-            
-            // Note: A função carregarNoticias() foi removida pois as notícias agora são manuais.
         });
     </script>
+    
+    <script>
+        particlesJS('particles-js', {
+            "particles": { "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#007bff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#007bff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false } },
+            "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } } },
+            "retina_detect": true
+        });
+    </script>
+
 </body>
 </html>
