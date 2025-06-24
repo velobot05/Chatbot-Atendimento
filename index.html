@@ -84,11 +84,13 @@
         <div id="news-panel" class="panel">
             <h2>Notícias da Semana</h2>
             <div id="news-list">
-                </div>
-                     <h4>Ajude-nos a melhorar com seu feedback!</h4>
+                 <div class="news-item">
+                    <h4>⚠️NOVAS NOTÍCIAS⚠️</h4>
                     <small>Publicado em: 24/06/2025</small>
-                    <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível. Caso o cliente queira quitar, será com o valor integral. Caso ele não esteja nesse lote, podemos informar para aguardar a liquidação no próximo mês.</p>
-                    <h2>Sobre as datas, verifique com um superior!!</h2>
+                    <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível...</p>
+                    <h2>verifique sempre o grupo de avisos!!</h2>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -98,12 +100,11 @@
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbxKVVuBi-_R4xkoqgOUohry39sdllyVTezuF_1eT0H8DHllialAnMQ9IFyQoHJ3csc/exec";
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbwESJ4M0IgKVLm9HLsM-bpxKsc0S9RD2rnzt43HSmbp2Qw461WAtDCYfjQgZ095B0Xh/exec";
 
             // --- INÍCIO DA LÓGICA DE MEMÓRIA CONTEXTUAL ---
             let ultimoTopico = ''; // Variável para guardar o contexto
 
-            // Lista de frases que indicam uma continuação da conversa
             const perguntasDeContinuacao = [
                 'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que',
                 'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes'
@@ -181,16 +182,13 @@
                 const textoNormalizado = text.toLowerCase().trim();
 
                 // Verifica se a pergunta é uma continuação E se temos um tópico guardado na memória
-                if (perguntasDeContinuacao.some(frase => textoNormalizado.startsWith(frase)) && ultimoTopico) {
+                if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
                     // Junta a pergunta de continuação com o último tópico para dar contexto à busca
                     perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
-                } else {
-                    // Se não for uma pergunta de continuação, limpa a memória para evitar confusão futura
-                    ultimoTopico = '';
                 }
                 
                 addMessage(text, 'user');
-                buscarResposta(perguntaFinal); // Envia a pergunta final (com ou sem contexto)
+                buscarResposta(perguntaFinal); 
                 if (userInput.value) { userInput.value = ''; }
             }
 
