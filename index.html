@@ -5,37 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Interno com ChatBot</title>
     <style>
+        /* --- DEFINIÇÃO DAS CORES (TEMAS) --- */
         :root {
             --cor-fundo: #f0f4f8;
             --cor-container: #ffffff;
             --cor-caixa-chat: #eaf2ff;
             --cor-texto-principal: #333;
+            --cor-borda: #d1e3f0;
             --cor-azul-claro: #a7d9ee;
             --cor-azul-medio: #007BFF;
             --cor-azul-escuro: #0056b3;
             --cor-balao-bot: #D6E4FF;
+            --cor-sombra: rgba(0, 0, 0, 0.1);
         }
-        body { font-family: 'Arial', sans-serif; background: var(--cor-fundo); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+
+        body.dark-theme {
+            --cor-fundo: #121212;
+            --cor-container: #1e1e1e;
+            --cor-caixa-chat: #2a2a2a;
+            --cor-texto-principal: #e0e0e0;
+            --cor-borda: #334a5f;
+            --cor-azul-claro: #334a5f;
+            --cor-azul-medio: #3a9bff;
+            --cor-azul-escuro: #87c3ff;
+            --cor-balao-bot: #2c3e50;
+            --cor-sombra: rgba(255, 255, 255, 0.05);
+        }
+
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: var(--cor-fundo); 
+            color: var(--cor-texto-principal);
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            transition: background-color 0.3s, color 0.3s;
+        }
         .app-container { display: grid; grid-template-columns: 300px 1fr 300px; width: 100%; max-width: 1400px; height: 95vh; gap: 20px; }
-        .panel { background: var(--cor-container); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); padding: 24px; display: flex; flex-direction: column; border: 1px solid var(--cor-azul-claro); overflow-y: auto; }
-        .panel h2 { margin-top: 0; color: var(--cor-azul-escuro); border-bottom: 2px solid var(--cor-azul-claro); padding-bottom: 10px; font-size: 18px; }
+        .panel { background: var(--cor-container); border-radius: 12px; box-shadow: 0 4px 20px var(--cor-sombra); padding: 24px; display: flex; flex-direction: column; border: 1px solid var(--cor-borda); overflow-y: auto; transition: background-color 0.3s, border-color 0.3s; }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--cor-azul-claro);
+            margin-bottom: 15px;
+        }
+        .panel h2 { margin: 0; padding-bottom: 10px; font-size: 18px; color: var(--cor-azul-escuro); border-bottom: none; }
+        
+        #theme-switcher {
+            font-size: 24px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            padding: 5px;
+            color: var(--cor-texto-principal);
+        }
+
         #quick-questions-list { list-style: none; padding: 0; margin: 0; }
-        #quick-questions-list li { padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; border: 1px solid #eee; }
+        #quick-questions-list li { padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; border: 1px solid var(--cor-borda); }
         #quick-questions-list li:hover { background-color: var(--cor-azul-medio); color: white; }
-        .chat-container { height: 100%; padding: 24px; display: flex; flex-direction: column; box-sizing: border-box; }
-        .chat-box { flex-grow: 1; overflow-y: auto; padding: 16px; background-color: var(--cor-caixa-chat); border-radius: 8px; }
-        .input-area { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
-        #user-input { flex-grow: 1; padding: 14px; border-radius: 24px; border: 1px solid var(--cor-azul-claro); font-size: 16px; outline: none; }
+        .chat-container { height: 100%; padding: 0; display: flex; flex-direction: column; box-sizing: border-box; }
+        .chat-box { flex-grow: 1; overflow-y: auto; padding: 16px; background-color: var(--cor-caixa-chat); border-radius: 8px; transition: background-color 0.3s; }
+        .input-area { display: flex; align-items: center; gap: 10px; margin-top: 15px; padding: 0 24px; }
+        #user-input { flex-grow: 1; padding: 14px; border-radius: 24px; border: 1px solid var(--cor-borda); background-color: var(--cor-container); color: var(--cor-texto-principal); font-size: 16px; outline: none; transition: background-color 0.3s, color 0.3s; }
         #user-input:focus { border-color: var(--cor-azul-medio); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         .message { position: relative; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%); color: #FFFFFF; margin-left: auto; }
-        .bot-msg { background: #D6E4FF; color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; }
-        #quick-actions-container { padding: 15px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
+        .bot-msg { background: var(--cor-balao-bot); color: var(--cor-texto-principal); margin-right: auto; padding-right: 40px; transition: background-color 0.3s, color 0.3s; }
+        #quick-actions-container { padding: 15px 0; border-top: 1px solid var(--cor-borda); border-bottom: 1px solid var(--cor-borda); margin: 15px 0; }
         #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
         .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        button.quick-action { flex-grow: 1; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px; text-align: left; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
+        button.quick-action { flex-grow: 1; background-color: #f8f9fa; border: 1px solid #dee2e6; color: #333; border-radius: 8px; padding: 10px; text-align: left; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
         button.quick-action:hover { background-color: #e9ecef; border-color: #adb5bd; }
-        .news-item { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .news-item { border-bottom: 1px solid var(--cor-borda); padding-bottom: 15px; margin-bottom: 15px; }
         .news-item:last-child { border-bottom: none; }
         .news-item h4 { margin: 0 0 5px 0; }
         .news-item small { color: #777; margin-bottom: 8px; display: block; }
@@ -48,15 +95,16 @@
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing-animation { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
-        .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: #555; opacity: 0.3; transition: opacity 0.2s ease; }
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: var(--cor-texto-principal); opacity: 0.3; transition: opacity 0.2s ease; }
         .bot-msg:hover .copy-btn { opacity: 1; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <div id="sidebar" class="panel">
-            <h2>Perguntas Frequentes</h2>
+            <div class="panel-header">
+                <h2>Perguntas Frequentes</h2>
+            </div>
             <ul id="quick-questions-list">
                 <li>Como funciona a portabilidade?</li>
                 <li>Quero fazer a exclusão da minha conta</li>
@@ -65,7 +113,12 @@
             </ul>
             <br><h4>Clique na prancheta 📋 ao lado da resposta do bot para copiar e formalizar sua resposta no chatgpt ou em outra I.A de sua preferência!!</h4><br>
         </div>
-        <div class="chat-container">
+
+        <div class="chat-container panel">
+            <div class="panel-header">
+                <h2>Velobot interno</h2>
+                <button id="theme-switcher" title="Alterar tema">☀️</button>
+            </div>
             <div class="chat-box" id="chat-box">
                 <div class="bot-msg message"><span>Olá! Sou o assistente de atendimento.</span></div>
             </div>
@@ -82,10 +135,13 @@
                 <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
             </div>
         </div>
+
         <div id="news-panel" class="panel">
-            <h2>Notícias da Semana</h2>
+            <div class="panel-header">
+                <h2>Notícias da Semana</h2>
+            </div>
             <div id="news-list">
-                 <div class="news-item">
+                <div class="news-item">
                     <h4>⚠️NOVAS NOTÍCIAS⚠️</h4>
                     <small>Publicado em: 24/06/2025</small>
                     <p>Pessoal, mudança de informações! A partir de agora, a liquidação antecipada não está mais disponível...</p>
@@ -101,16 +157,12 @@
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const body = document.body;
             const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbwESJ4M0IgKVLm9HLsM-bpxKsc0S9RD2rnzt43HSmbp2Qw461WAtDCYfjQgZ095B0Xh/exec";
 
-            // --- INÍCIO DA LÓGICA DE MEMÓRIA CONTEXTUAL ---
-            let ultimoTopico = ''; // Variável para guardar o contexto
-
-            const perguntasDeContinuacao = [
-                'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que',
-                'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes'
-            ];
-            // --- FIM DA LÓGICA DE MEMÓRIA CONTEXTUAL ---
+            let ultimoTopico = '';
+            const perguntasDeContinuacao = [ 'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que', 'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes' ];
 
             function toggleLoader(show) {
                 const existingLoader = document.getElementById('loader');
@@ -159,43 +211,55 @@
                     const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
                     const data = await response.json();
                     toggleLoader(false);
-
                     if (data.status === 'sucesso') {
                         addMessage(data.resposta, 'bot');
-                        // Salva o contexto retornado pela API na nossa variável de memória
                         ultimoTopico = data.contexto || '';
                     } else {
                         addMessage(data.mensagem, 'bot');
-                        ultimoTopico = ''; // Limpa o contexto se a busca falhar
+                        ultimoTopico = '';
                     }
                 } catch (error) {
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
                     addMessage("Erro de conexão com o sistema de respostas.", 'bot');
-                    ultimoTopico = ''; // Limpa o contexto em caso de erro
+                    ultimoTopico = '';
                 }
             }
             
             function handleSendMessage(text) {
                 if (!text || !text.trim()) return;
-                
                 let perguntaFinal = text;
                 const textoNormalizado = text.toLowerCase().trim();
-
-                // Verifica se a pergunta é uma continuação E se temos um tópico guardado na memória
                 if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
-                    // Junta a pergunta de continuação com o último tópico para dar contexto à busca
                     perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
                 }
-                
                 addMessage(text, 'user');
-                buscarResposta(perguntaFinal); 
+                buscarResposta(perguntaFinal);
                 if (userInput.value) { userInput.value = ''; }
             }
 
             userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(userInput.value); } });
             quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
             quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
+
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                body.classList.add(savedTheme);
+                if (savedTheme === 'dark-theme') {
+                    themeSwitcher.innerHTML = '🌙';
+                }
+            }
+
+            themeSwitcher.addEventListener('click', () => {
+                body.classList.toggle('dark-theme');
+                if (body.classList.contains('dark-theme')) {
+                    localStorage.setItem('theme', 'dark-theme');
+                    themeSwitcher.innerHTML = '🌙';
+                } else {
+                    localStorage.removeItem('theme');
+                    themeSwitcher.innerHTML = '☀️';
+                }
+            });
         });
     </script>
 </body>
