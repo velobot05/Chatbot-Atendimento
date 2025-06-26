@@ -117,9 +117,9 @@
 
         <div class="chat-container panel">
             <div class="panel-header">
-    <h2 style="text-align: center; flex-grow: 1;">Assistente Virtual</h2>
-    <button id="theme-switcher" title="Alterar tema">☀️</button>
-</div>
+                <h2 style="text-align: center; flex-grow: 1;">Assistente Virtual</h2>
+                <button id="theme-switcher" title="Alterar tema">☀️</button>
+            </div>
             <div class="chat-box" id="chat-box">
                 <div class="bot-msg message"><span>Olá! Sou o assistente de atendimento.</span></div>
             </div>
@@ -159,8 +159,8 @@
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
             const themeSwitcher = document.getElementById('theme-switcher');
-            const body = document.body;
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbxqLMVJ5Uqpqt5k0ZQWrfEgj4ADnPuitwDWU0odZsXDYNMc-D3qsvB_mWjVGGfvkb3m/exec";
+             const body = document.body;
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbw8e0sE6wjJYbrJp-IdsaWP70qwiW9SsKQPPCcVIIZnObZ4oyLQaFomB-GMetoJfnrl/exec";
 
             let ultimoTopico = '';
             const perguntasDeContinuacao = [ 'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que', 'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes' ];
@@ -204,7 +204,25 @@
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
-            
+
+            function criarBotoesDeSugestao(sugestoes) {
+                const containerBotoes = document.createElement('div');
+                containerBotoes.classList.add('quick-actions-grid'); 
+                containerBotoes.style.marginTop = '15px';
+
+                sugestoes.forEach(sugestao => {
+                    const botao = document.createElement('button');
+                    botao.classList.add('quick-action');
+                    botao.innerText = sugestao;
+                    botao.onclick = () => {
+                        handleSendMessage(sugestao);
+                    };
+                    containerBotoes.appendChild(botao);
+                });
+                chatBox.appendChild(containerBotoes);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
             async function buscarResposta(textoDaPergunta) {
                 if (!textoDaPergunta.trim()) return;
                 toggleLoader(true);
@@ -212,9 +230,13 @@
                     const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
                     const data = await response.json();
                     toggleLoader(false);
+
                     if (data.status === 'sucesso') {
                         addMessage(data.resposta, 'bot');
                         ultimoTopico = data.contexto || '';
+                        if (data.sugestoes && data.sugestoes.length > 0) {
+                            criarBotoesDeSugestao(data.sugestoes);
+                        }
                     } else {
                         addMessage(data.mensagem, 'bot');
                         ultimoTopico = '';
