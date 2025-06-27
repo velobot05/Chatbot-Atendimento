@@ -154,17 +154,65 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- REFERÊNCIAS E CONSTANTES ---
             const chatBox = document.getElementById('chat-box');
             const userInput = document.getElementById('user-input');
             const quickQuestionsList = document.getElementById('quick-questions-list');
             const quickActionsContainer = document.getElementById('quick-actions-container');
             const themeSwitcher = document.getElementById('theme-switcher');
-             const body = document.body;
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbw8e0sE6wjJYbrJp-IdsaWP70qwiW9SsKQPPCcVIIZnObZ4oyLQaFomB-GMetoJfnrl/exec";
-
+            const body = document.body;
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbzhS8N1XzoS8HvG-bMojc3gpSM8JhLW67l8AmcLgV2U5SRBvl9SYhAUO3b3Fvc1sXky/exec";
             let ultimoTopico = '';
             const perguntasDeContinuacao = [ 'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que', 'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes' ];
+            let dadosAtendente = {};
 
+            // --- FUNÇÃO DE VERIFICAÇÃO COM LÓGICA DE 24 HORAS ---
+            function verificarIdentificacao() {
+                const umDiaEmMs = 24 * 60 * 60 * 1000;
+                const dadosSalvosString = localStorage.getItem('dadosAtendenteChatbot');
+                let dadosSalvos = null;
+
+                if (dadosSalvosString) {
+                    dadosSalvos = JSON.parse(dadosSalvosString);
+                }
+
+                // 1. VERIFICA SE OS DADOS NÃO EXISTEM OU SE O TIMESTAMP É MAIS ANTIGO QUE 24H
+                if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs)) {
+                    alert("Para continuar, por favor, identifique-se. Seus dados serão salvos por 24 horas.");
+                    let nome = '';
+                    let email = '';
+                    
+                    // 2. LOOP PARA GARANTIR QUE O NOME SEJA PREENCHIDO
+                    while (!nome || nome.trim() === '') {
+                        nome = prompt("OBRIGATÓRIO: Por favor, digite seu NOME completo:", "");
+                        if (nome === null) { // Se o usuário clicar em Cancelar
+                            alert("A identificação é necessária para usar a ferramenta.");
+                        }
+                    }
+                    
+                    // 3. LOOP PARA GARANTIR QUE O E-MAIL SEJA PREENCHIDO
+                    while (!email || email.trim() === '' || !email.includes('@')) {
+                        email = prompt("OBRIGATÓRIO: Por favor, digite seu E-MAIL corporativo:", "");
+                        if (email === null) {
+                            alert("A identificação é necessária para usar a ferramenta.");
+                        } else if (email.trim() !== '' && !email.includes('@')) {
+                            alert("Formato de e-mail inválido. Tente novamente.");
+                        }
+                    }
+
+                    // 4. GUARDA OS NOVOS DADOS COM UM NOVO TIMESTAMP NO NAVEGADOR
+                    dadosAtendente = { nome: nome.trim(), email: email.trim(), timestamp: Date.now() };
+                    localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
+                    alert("Obrigado! Identificação registrada.");
+
+                } else {
+                    // Se os dados ainda são válidos, apenas carrega para a variável
+                    dadosAtendente = dadosSalvos;
+                    console.log(`Bem-vindo(a) de volta, ${dadosAtendente.nome}!`);
+                }
+            }
+
+            // --- FUNÇÕES AUXILIARES ---
             function toggleLoader(show) {
                 const existingLoader = document.getElementById('loader');
                 if (show) {
@@ -223,11 +271,16 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
 
+            // --- FUNÇÃO DE BUSCA ATUALIZADA ---
             async function buscarResposta(textoDaPergunta) {
                 if (!textoDaPergunta.trim()) return;
                 toggleLoader(true);
                 try {
-                    const response = await fetch(`${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}`);
+                    // Junta nome e e-mail para enviar como um único parâmetro "usuario"
+                    const identificacaoFormatada = `${dadosAtendente.nome} (${dadosAtendente.email})`;
+                    const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(identificacaoFormatada)}`;
+
+                    const response = await fetch(url);
                     const data = await response.json();
                     toggleLoader(false);
 
@@ -261,9 +314,23 @@
                 if (userInput.value) { userInput.value = ''; }
             }
 
-            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(userInput.value); } });
-            quickQuestionsList.addEventListener('click', (e) => { if (e.target && e.target.tagName === 'LI') { handleSendMessage(e.target.innerText); } });
-            quickActionsContainer.addEventListener('click', (e) => { if (e.target && e.target.classList.contains('quick-action')) { handleSendMessage(e.target.innerText); } });
+            // --- EVENT LISTENERS ---
+            userInput.addEventListener('keydown', (e) => { 
+                if (e.key === 'Enter') { 
+                    e.preventDefault(); 
+                    handleSendMessage(userInput.value); 
+                } 
+            });
+            quickQuestionsList.addEventListener('click', (e) => { 
+                if (e.target && e.target.tagName === 'LI') { 
+                    handleSendMessage(e.target.innerText); 
+                } 
+            });
+            quickActionsContainer.addEventListener('click', (e) => { 
+                if (e.target && e.target.classList.contains('quick-action')) { 
+                    handleSendMessage(e.target.innerText); 
+                } 
+            });
 
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
@@ -283,6 +350,9 @@
                     themeSwitcher.innerHTML = '☀️';
                 }
             });
+
+            // CHAMA A FUNÇÃO DE VERIFICAÇÃO ASSIM QUE A PÁGINA CARREGA
+            verificarIdentificacao();
         });
     </script>
 </body>
