@@ -46,7 +46,7 @@
             box-sizing: border-box; 
             transition: background-color 0.3s, color 0.3s;
         }
-        .app-container { display: grid; grid-template-columns: 300px 1fr 300px; width: 100%; max-width: 1400px; height: 95vh; gap: 20px; }
+        .app-wrapper { display: grid; grid-template-columns: 300px 1fr 300px; width: 100%; max-width: 1400px; height: 95vh; gap: 20px; position: relative; z-index: 1; }
         .panel { background: var(--cor-container); border-radius: 12px; box-shadow: 0 4px 20px var(--cor-sombra); padding: 24px; display: flex; flex-direction: column; border: 1px solid var(--cor-borda); overflow-y: auto; transition: background-color 0.3s, border-color 0.3s; }
         
         .panel-header {
@@ -98,10 +98,96 @@
         @keyframes typing-animation { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
         .copy-btn { position: absolute; top: 5px; right: 5px; background: transparent; border: none; cursor: pointer; font-size: 18px; color: var(--cor-texto-principal); opacity: 0.3; transition: opacity 0.2s ease; }
         .bot-msg:hover .copy-btn { opacity: 1; }
+
+        /* --- ESTILOS PARA O MODAL DE IDENTIFICAÇÃO --- */
+        #identificacao-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 50, 100, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease;
+        }
+        #identificacao-overlay.hidden {
+            display: none;
+        }
+        #identificacao-box {
+            background: var(--cor-container);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+        }
+        #identificacao-box h2 {
+            margin-top: 0;
+            color: var(--cor-azul-escuro);
+        }
+        #identificacao-form .input-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        #identificacao-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        #identificacao-form input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        #identificacao-submit {
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            background-color: var(--cor-azul-medio);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #identificacao-error {
+            color: #ff4d4d;
+            margin-top: 15px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <div id="identificacao-overlay">
+        <div id="identificacao-box">
+            <h2>Bem-vindo(a) ao Painel</h2>
+            <p>Por favor, identifique-se para continuar.</p>
+            <form id="identificacao-form">
+                <div class="input-group">
+                    <label for="nome-input">Nome Completo</label>
+                    <input type="text" id="nome-input" required>
+                </div>
+                <div class="input-group">
+                    <label for="email-input">E-mail Corporativo</label>
+                    <input type="email" id="email-input" required>
+                </div>
+                <button type="submit" id="identificacao-submit">Entrar</button>
+            </form>
+            <p id="identificacao-error">Acesso permitido apenas para e-mails @velotax.com.br</p>
+        </div>
+    </div>
+
+    <div class="app-wrapper">
         <div id="sidebar" class="panel">
             <div class="panel-header">
                 <h2>Perguntas Frequentes</h2>
@@ -160,37 +246,11 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- REFERÊNCIAS E CONSTANTES ---
-            const chatBox = document.getElementById('chat-box');
-            const userInput = document.getElementById('user-input');
-            const quickQuestionsList = document.getElementById('quick-questions-list');
-            const quickActionsContainer = document.getElementById('quick-actions-container');
-            const themeSwitcher = document.getElementById('theme-switcher');
-            const body = document.body;
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyqF_3OVkELjMzZCOYPKZGypn8Qv7vllWvhRe8q3kab4XzDy1STEBB9ugLY1YQa0g/exec";
-            let dadosAtendente = {};
+            // --- LÓGICA DE IDENTIFICAÇÃO E INICIALIZAÇÃO ---
+            const identificacaoOverlay = document.getElementById('identificacao-overlay');
+            const identificacaoForm = document.getElementById('identificacao-form');
+            const appWrapper = document.querySelector('.app-wrapper');
 
-            // --- FUNÇÃO PARA A SAUDAÇÃO PERSONALIZADA ---
-            function enviarSaudacaoInicial(nome) {
-                const hora = new Date().getHours();
-                let saudacao = 'Olá';
-
-                if (hora >= 5 && hora < 12) {
-                    saudacao = 'Bom dia';
-                } else if (hora >= 12 && hora < 18) {
-                    saudacao = 'Boa tarde';
-                } else {
-                    saudacao = 'Boa noite';
-                }
-                
-                // Pega o primeiro nome para uma saudação mais pessoal
-                const primeiroNome = nome.split(' ')[0];
-
-                const mensagemCompleta = `${saudacao}, ${primeiroNome}! Sou o assistente de atendimento. Como posso ajudar?`;
-                addMessage(mensagemCompleta, 'bot');
-            }
-
-            // --- FUNÇÃO DE VERIFICAÇÃO ATUALIZADA ---
             function verificarIdentificacao() {
                 const DOMINIO_PERMITIDO = "@velotax.com.br";
                 const umDiaEmMs = 24 * 60 * 60 * 1000;
@@ -202,187 +262,211 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
                 }
 
                 if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs)) {
-                    alert("Para continuar, por favor, identifique-se com seu nome e e-mail corporativo.");
-                    let nome = '';
-                    let email = '';
-                    let emailValido = false;
-                    
-                    while (!nome || nome.trim() === '') {
-                        nome = prompt("OBRIGATÓRIO: Por favor, digite seu NOME completo:", "");
-                        if (nome === null) { 
-                            alert("A identificação é necessária para usar a ferramenta."); 
-                        }
-                    }
-                    
-                    while (!emailValido) {
-                        email = prompt(`OBRIGATÓRIO: Por favor, digite seu E-MAIL ):`, "");
-                        if (email === null) {
-                            alert("O e-mail corporativo é necessário para usar a ferramenta.");
-                            continue;
-                        }
-                        if (email.toLowerCase().trim().endsWith(DOMINIO_PERMITIDO)) {
-                            emailValido = true;
-                        } else {
-                            alert(`Acesso negado. Por favor, use um e-mail com o domínio.`);
-                        }
-                    }
+                    // Se não há dados ou se expiraram, mostra o modal
+                    identificacaoOverlay.classList.remove('hidden');
+                } else {
+                    // Se os dados são válidos, esconde o modal e inicia o bot
+                    identificacaoOverlay.classList.add('hidden');
+                    iniciarBot(dadosSalvos);
+                }
+            }
+            
+            identificacaoForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const DOMINIO_PERMITIDO = "@velotax.com.br";
+                const nomeInput = document.getElementById('nome-input');
+                const emailInput = document.getElementById('email-input');
+                const errorMsg = document.getElementById('identificacao-error');
 
-                    dadosAtendente = { nome: nome.trim(), email: email.trim(), timestamp: Date.now() };
+                const nome = nomeInput.value.trim();
+                const email = emailInput.value.trim().toLowerCase();
+
+                if (nome && email && email.endsWith(DOMINIO_PERMITIDO)) {
+                    const dadosAtendente = { nome: nome, email: email, timestamp: Date.now() };
                     localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
-                    alert("Obrigado! Acesso liberado pelas próximas 24 horas.");
                     
-                    // CHAMA A SAUDAÇÃO APÓS A NOVA IDENTIFICAÇÃO
-                    enviarSaudacaoInicial(dadosAtendente.nome);
-
+                    identificacaoOverlay.classList.add('hidden');
+                    iniciarBot(dadosAtendente);
                 } else {
-                    dadosAtendente = dadosSalvos;
-                    console.log(`Bem-vindo(a) de volta, ${dadosAtendente.nome}!`);
-                    
-                    // CHAMA A SAUDAÇÃO AO CARREGAR A PÁGINA PARA UM USUÁRIO JÁ IDENTIFICADO
-                    enviarSaudacaoInicial(dadosAtendente.nome);
+                    errorMsg.style.display = 'block';
                 }
-            }
+            });
 
-            // --- FUNÇÕES AUXILIARES ---
-            function toggleLoader(show) {
-                const existingLoader = document.getElementById('loader');
-                if (show) {
-                    if (!existingLoader) {
-                        const loaderElement = document.createElement('div');
-                        loaderElement.id = 'loader';
-                        loaderElement.classList.add('loader-container');
-                        loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-                        chatBox.appendChild(loaderElement);
-                        chatBox.scrollTop = chatBox.scrollHeight;
+            // --- FUNÇÃO QUE INICIA O BOT ---
+            function iniciarBot(dadosAtendente) {
+                // --- REFERÊNCIAS E CONSTANTES ---
+                const chatBox = document.getElementById('chat-box');
+                const userInput = document.getElementById('user-input');
+                const quickQuestionsList = document.getElementById('quick-questions-list');
+                const quickActionsContainer = document.getElementById('quick-actions-container');
+                const themeSwitcher = document.getElementById('theme-switcher');
+                const body = document.body;
+                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyqF_3OVkELjMzZCOYPKZGypn8Qv7vllWvhRe8q3kab4XzDy1STEBB9ugLY1YQa0g/exec";
+
+                // --- FUNÇÃO PARA A SAUDAÇÃO PERSONALIZADA ---
+                function enviarSaudacaoInicial(nome) {
+                    const hora = new Date().getHours();
+                    let saudacao = 'Olá';
+
+                    if (hora >= 5 && hora < 12) {
+                        saudacao = 'Bom dia';
+                    } else if (hora >= 12 && hora < 18) {
+                        saudacao = 'Boa tarde';
+                    } else {
+                        saudacao = 'Boa noite';
                     }
-                } else {
-                    if (existingLoader) { existingLoader.remove(); }
+                    
+                    // Pega o primeiro nome para uma saudação mais pessoal
+                    const primeiroNome = nome.split(' ')[0];
+
+                    const mensagemCompleta = `${saudacao}, ${primeiroNome}! Sou o assistente de atendimento. Como posso ajudar?`;
+                    addMessage(mensagemCompleta, 'bot');
                 }
-            }
 
-            function addMessage(message, sender) {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-                messageElement.innerHTML = message;
-                if (sender === 'bot' && !message.includes("Sou o assistente")) {
-                    const copyBtn = document.createElement('button');
-                    copyBtn.classList.add('copy-btn');
-                    copyBtn.innerHTML = '📋';
-                    copyBtn.title = 'Copiar resposta';
-                    copyBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = message;
-                        navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
-                            copyBtn.innerHTML = '✅';
-                            setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
-                        });
-                    };
-                    messageElement.appendChild(copyBtn);
-                }
-                chatBox.appendChild(messageElement);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-
-            function criarBotoesDeSugestao(sugestoes) {
-                const containerBotoes = document.createElement('div');
-                containerBotoes.classList.add('quick-actions-grid'); 
-                containerBotoes.style.marginTop = '15px';
-
-                sugestoes.forEach(sugestao => {
-                    const botao = document.createElement('button');
-                    botao.classList.add('quick-action');
-                    botao.innerText = sugestao;
-                    botao.onclick = () => {
-                        handleSendMessage(sugestao);
-                    };
-                    containerBotoes.appendChild(botao);
-                });
-                chatBox.appendChild(containerBotoes);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-
-            // --- FUNÇÃO DE BUSCA ATUALIZADA ---
-            async function buscarResposta(textoDaPergunta) {
-                if (!textoDaPergunta.trim()) return;
-                toggleLoader(true);
-                try {
-                    // Junta nome e e-mail para enviar como um único parâmetro "usuario"
-                    const identificacaoFormatada = `${dadosAtendente.nome} (${dadosAtendente.email})`;
-                    const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(identificacaoFormatada)}`;
-
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    toggleLoader(false);
-
-                    if (data.status === 'sucesso') {
-                        addMessage(data.resposta, 'bot');
-                        if (data.sugestoes && data.sugestoes.length > 0) {
-                            criarBotoesDeSugestao(data.sugestoes);
+                // --- FUNÇÕES AUXILIARES ---
+                function toggleLoader(show) {
+                    const existingLoader = document.getElementById('loader');
+                    if (show) {
+                        if (!existingLoader) {
+                            const loaderElement = document.createElement('div');
+                            loaderElement.id = 'loader';
+                            loaderElement.classList.add('loader-container');
+                            loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+                            chatBox.appendChild(loaderElement);
+                            chatBox.scrollTop = chatBox.scrollHeight;
                         }
                     } else {
-                        addMessage(data.mensagem, 'bot');
+                        if (existingLoader) { existingLoader.remove(); }
                     }
-                } catch (error) {
-                    toggleLoader(false);
-                    console.error("Erro ao buscar resposta:", error);
-                    addMessage("Erro de conexão com o sistema de respostas.", 'bot');
                 }
+
+                function addMessage(message, sender) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
+                    messageElement.innerHTML = message;
+                    if (sender === 'bot' && !message.includes("Sou o assistente")) {
+                        const copyBtn = document.createElement('button');
+                        copyBtn.classList.add('copy-btn');
+                        copyBtn.innerHTML = '📋';
+                        copyBtn.title = 'Copiar resposta';
+                        copyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = message;
+                            navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
+                                copyBtn.innerHTML = '✅';
+                                setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
+                            });
+                        };
+                        messageElement.appendChild(copyBtn);
+                    }
+                    chatBox.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+
+                function criarBotoesDeSugestao(sugestoes) {
+                    const containerBotoes = document.createElement('div');
+                    containerBotoes.classList.add('quick-actions-grid'); 
+                    containerBotoes.style.marginTop = '15px';
+
+                    sugestoes.forEach(sugestao => {
+                        const botao = document.createElement('button');
+                        botao.classList.add('quick-action');
+                        botao.innerText = sugestao;
+                        botao.onclick = () => {
+                            handleSendMessage(sugestao);
+                        };
+                        containerBotoes.appendChild(botao);
+                    });
+                    chatBox.appendChild(containerBotoes);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+
+                // --- FUNÇÃO DE BUSCA ATUALIZADA ---
+                async function buscarResposta(textoDaPergunta) {
+                    if (!textoDaPergunta.trim()) return;
+                    toggleLoader(true);
+                    try {
+                        // Junta nome e e-mail para enviar como um único parâmetro "usuario"
+                        const identificacaoFormatada = `${dadosAtendente.nome} (${dadosAtendente.email})`;
+                        const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(identificacaoFormatada)}`;
+
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        toggleLoader(false);
+
+                        if (data.status === 'sucesso') {
+                            addMessage(data.resposta, 'bot');
+                            if (data.sugestoes && data.sugestoes.length > 0) {
+                                criarBotoesDeSugestao(data.sugestoes);
+                            }
+                        } else {
+                            addMessage(data.mensagem, 'bot');
+                        }
+                    } catch (error) {
+                        toggleLoader(false);
+                        console.error("Erro ao buscar resposta:", error);
+                        addMessage("Erro de conexão com o sistema de respostas.", 'bot');
+                    }
+                }
+
+                function handleSendMessage(text) {
+                    if (!text || !text.trim()) return;
+                    let perguntaFinal = text;
+                    // Comentado para manter a lógica original do Código 1, mas sem uso
+                    /*
+                    const textoNormalizado = text.toLowerCase().trim();
+                    if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
+                        perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
+                    }
+                    */
+                    addMessage(text, 'user');
+                    buscarResposta(perguntaFinal);
+                    if (userInput.value) { userInput.value = ''; }
+                }
+
+                // --- EVENT LISTENERS ---
+                userInput.addEventListener('keydown', (e) => { 
+                    if (e.key === 'Enter') { 
+                        e.preventDefault(); 
+                        handleSendMessage(userInput.value); 
+                    } 
+                });
+                quickQuestionsList.addEventListener('click', (e) => { 
+                    if (e.target && e.target.tagName === 'LI') { 
+                        handleSendMessage(e.target.innerText); 
+                    } 
+                });
+                quickActionsContainer.addEventListener('click', (e) => { 
+                    if (e.target && e.target.classList.contains('quick-action')) { 
+                        handleSendMessage(e.target.innerText); 
+                    } 
+                });
+
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    body.classList.add(savedTheme);
+                    if (savedTheme === 'dark-theme') {
+                        themeSwitcher.innerHTML = '🌙';
+                    }
+                }
+
+                themeSwitcher.addEventListener('click', () => {
+                    body.classList.toggle('dark-theme');
+                    if (body.classList.contains('dark-theme')) {
+                        localStorage.setItem('theme', 'dark-theme');
+                        themeSwitcher.innerHTML = '🌙';
+                    } else {
+                        localStorage.removeItem('theme');
+                        themeSwitcher.innerHTML = '☀️';
+                    }
+                });
+
+                // Ativa a saudação inicial quando o bot é iniciado
+                enviarSaudacaoInicial(dadosAtendente.nome);
             }
-
-            function handleSendMessage(text) {
-                if (!text || !text.trim()) return;
-                let perguntaFinal = text;
-                // Comentado para manter a lógica original do Código 1, mas sem uso
-                /*
-                const textoNormalizado = text.toLowerCase().trim();
-                if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
-                    perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
-                }
-                */
-                addMessage(text, 'user');
-                buscarResposta(perguntaFinal);
-                if (userInput.value) { userInput.value = ''; }
-            }
-
-            // --- EVENT LISTENERS ---
-            userInput.addEventListener('keydown', (e) => { 
-                if (e.key === 'Enter') { 
-                    e.preventDefault(); 
-                    handleSendMessage(userInput.value); 
-                } 
-            });
-            quickQuestionsList.addEventListener('click', (e) => { 
-                if (e.target && e.target.tagName === 'LI') { 
-                    handleSendMessage(e.target.innerText); 
-                } 
-            });
-            quickActionsContainer.addEventListener('click', (e) => { 
-                if (e.target && e.target.classList.contains('quick-action')) { 
-                    handleSendMessage(e.target.innerText); 
-                } 
-            });
-
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                body.classList.add(savedTheme);
-                if (savedTheme === 'dark-theme') {
-                    themeSwitcher.innerHTML = '🌙';
-                }
-            }
-
-            themeSwitcher.addEventListener('click', () => {
-                body.classList.toggle('dark-theme');
-                if (body.classList.contains('dark-theme')) {
-                    localStorage.setItem('theme', 'dark-theme');
-                    themeSwitcher.innerHTML = '🌙';
-                } else {
-                    localStorage.removeItem('theme');
-                    themeSwitcher.innerHTML = '☀️';
-                }
-            });
-
-            // CHAMA A FUNÇÃO DE VERIFICAÇÃO ASSIM QUE A PÁGINA CARREGA
+            
+            // Inicia a verificação assim que a página carrega
             verificarIdentificacao();
         });
     </script>
