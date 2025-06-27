@@ -161,13 +161,12 @@
             const quickActionsContainer = document.getElementById('quick-actions-container');
             const themeSwitcher = document.getElementById('theme-switcher');
             const body = document.body;
-            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbx8ouHs1DIu6VqfEKETLRdPDdDKuGlsF-u5SDMgiptfNFiG-Iaee41SeAxI1n7h2xaF/exec";
-            let ultimoTopico = '';
-            const perguntasDeContinuacao = [ 'qual o passo a passo', 'como funciona', 'e os custos', 'quais os requisitos', 'por que', 'onde', 'como fazer', 'me explique melhor', 'fale mais', 'detalhes' ];
+            const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyqF_3OVkELjMzZCOYPKZGypn8Qv7vllWvhRe8q3kab4XzDy1STEBB9ugLY1YQa0g/exec";
             let dadosAtendente = {};
 
-            // --- FUNÇÃO DE VERIFICAÇÃO COM LÓGICA DE 24 HORAS ---
+            // --- NOVA FUNÇÃO DE VERIFICAÇÃO COM LÓGICA DE 24H E VALIDAÇÃO DE DOMÍNIO ---
             function verificarIdentificacao() {
+                const DOMINIO_PERMITIDO = "@velotax.com.br";
                 const umDiaEmMs = 24 * 60 * 60 * 1000;
                 const dadosSalvosString = localStorage.getItem('dadosAtendenteChatbot');
                 let dadosSalvos = null;
@@ -178,11 +177,13 @@
 
                 // 1. VERIFICA SE OS DADOS NÃO EXISTEM OU SE O TIMESTAMP É MAIS ANTIGO QUE 24H
                 if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs)) {
-                    alert("Para continuar, por favor, identifique-se. Seus dados serão salvos por 24 horas.");
+                    alert("Para continuar, por favor, identifique-se com seu nome e e-mail corporativo.");
+                    
                     let nome = '';
                     let email = '';
+                    let emailValido = false;
                     
-                    // 2. LOOP PARA GARANTIR QUE O NOME SEJA PREENCHIDO
+                    // 2. LOOP OBRIGATÓRIO PARA O NOME
                     while (!nome || nome.trim() === '') {
                         nome = prompt("OBRIGATÓRIO: Por favor, digite seu NOME completo:", "");
                         if (nome === null) { // Se o usuário clicar em Cancelar
@@ -190,20 +191,25 @@
                         }
                     }
                     
-                    // 3. LOOP PARA GARANTIR QUE O E-MAIL SEJA PREENCHIDO
-                    while (!email || email.trim() === '' || !email.includes('@')) {
-                        email = prompt("OBRIGATÓRIO: Por favor, digite seu E-MAIL corporativo:", "");
-                        if (email === null) {
-                            alert("A identificação é necessária para usar a ferramenta.");
-                        } else if (email.trim() !== '' && !email.includes('@')) {
-                            alert("Formato de e-mail inválido. Tente novamente.");
+                    // 3. LOOP OBRIGATÓRIO PARA O E-MAIL COM VALIDAÇÃO DE DOMÍNIO
+                    while (!emailValido) {
+                        email = prompt(`OBRIGATÓRIO: Por favor, digite seu E-MAIL:`, "");
+                        if (email === null) { // Se o usuário clicar em Cancelar
+                            alert("O e-mail corporativo é necessário para usar a ferramenta.");
+                            continue; // Volta para o início do loop
+                        }
+                        // Normaliza o e-mail e verifica se termina com o domínio permitido
+                        if (email.toLowerCase().trim().endsWith(DOMINIO_PERMITIDO)) {
+                            emailValido = true; // Condição para sair do loop
+                        } else {
+                            alert(`Acesso negado. Por favor, use um e-mail com o domínio correto.`);
                         }
                     }
 
-                    // 4. GUARDA OS NOVOS DADOS COM UM NOVO TIMESTAMP NO NAVEGADOR
+                    // 4. GUARDA OS NOVOS DADOS NO NAVEGADOR
                     dadosAtendente = { nome: nome.trim(), email: email.trim(), timestamp: Date.now() };
                     localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
-                    alert("Obrigado! Identificação registrada.");
+                    alert("Obrigado! Acesso liberado pelas próximas 24 horas.");
 
                 } else {
                     // Se os dados ainda são válidos, apenas carrega para a variável
@@ -286,29 +292,29 @@
 
                     if (data.status === 'sucesso') {
                         addMessage(data.resposta, 'bot');
-                        ultimoTopico = data.contexto || '';
                         if (data.sugestoes && data.sugestoes.length > 0) {
                             criarBotoesDeSugestao(data.sugestoes);
                         }
                     } else {
                         addMessage(data.mensagem, 'bot');
-                        ultimoTopico = '';
                     }
                 } catch (error) {
                     toggleLoader(false);
                     console.error("Erro ao buscar resposta:", error);
                     addMessage("Erro de conexão com o sistema de respostas.", 'bot');
-                    ultimoTopico = '';
                 }
             }
-            
+
             function handleSendMessage(text) {
                 if (!text || !text.trim()) return;
                 let perguntaFinal = text;
+                // Comentado para manter a lógica original do Código 1, mas sem uso conforme Código 2
+                /*
                 const textoNormalizado = text.toLowerCase().trim();
                 if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
                     perguntaFinal = textoNormalizado + ' ' + ultimoTopico;
                 }
+                */
                 addMessage(text, 'user');
                 buscarResposta(perguntaFinal);
                 if (userInput.value) { userInput.value = ''; }
