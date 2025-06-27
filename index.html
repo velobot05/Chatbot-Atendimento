@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Interno com ChatBot</title>
-
     <link rel="icon" type="image/png" href="https://github.com/velobot05/Chatbot-Atendimento/blob/main/imagens/logo.png-removebg-preview%20(1).png?raw=true">
-
     <style>
         /* --- DEFINIÇÃO DAS CORES (TEMAS) --- */
         :root {
@@ -124,7 +122,7 @@
                 <button id="theme-switcher" title="Alterar tema">☀️</button>
             </div>
             <div class="chat-box" id="chat-box">
-                <div class="bot-msg message"><span>Olá! Sou o assistente de atendimento.</span></div>
+                <!-- Saudação inicial será adicionada dinamicamente via JavaScript -->
             </div>
             <div id="quick-actions-container">
                 <h3>Ações Rápidas</h3>
@@ -172,7 +170,27 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
             const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyqF_3OVkELjMzZCOYPKZGypn8Qv7vllWvhRe8q3kab4XzDy1STEBB9ugLY1YQa0g/exec";
             let dadosAtendente = {};
 
-            // --- NOVA FUNÇÃO DE VERIFICAÇÃO COM LÓGICA DE 24H E VALIDAÇÃO DE DOMÍNIO ---
+            // --- FUNÇÃO PARA A SAUDAÇÃO PERSONALIZADA ---
+            function enviarSaudacaoInicial(nome) {
+                const hora = new Date().getHours();
+                let saudacao = 'Olá';
+
+                if (hora >= 5 && hora < 12) {
+                    saudacao = 'Bom dia';
+                } else if (hora >= 12 && hora < 18) {
+                    saudacao = 'Boa tarde';
+                } else {
+                    saudacao = 'Boa noite';
+                }
+                
+                // Pega o primeiro nome para uma saudação mais pessoal
+                const primeiroNome = nome.split(' ')[0];
+
+                const mensagemCompleta = `${saudacao}, ${primeiroNome}! Sou o assistente de atendimento. Como posso ajudar?`;
+                addMessage(mensagemCompleta, 'bot');
+            }
+
+            // --- FUNÇÃO DE VERIFICAÇÃO ATUALIZADA ---
             function verificarIdentificacao() {
                 const DOMINIO_PERMITIDO = "@velotax.com.br";
                 const umDiaEmMs = 24 * 60 * 60 * 1000;
@@ -183,46 +201,45 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
                     dadosSalvos = JSON.parse(dadosSalvosString);
                 }
 
-                // 1. VERIFICA SE OS DADOS NÃO EXISTEM OU SE O TIMESTAMP É MAIS ANTIGO QUE 24H
                 if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs)) {
                     alert("Para continuar, por favor, identifique-se com seu nome e e-mail corporativo.");
-                    
                     let nome = '';
                     let email = '';
                     let emailValido = false;
                     
-                    // 2. LOOP OBRIGATÓRIO PARA O NOME
                     while (!nome || nome.trim() === '') {
                         nome = prompt("OBRIGATÓRIO: Por favor, digite seu NOME completo:", "");
-                        if (nome === null) { // Se o usuário clicar em Cancelar
-                            alert("A identificação é necessária para usar a ferramenta.");
+                        if (nome === null) { 
+                            alert("A identificação é necessária para usar a ferramenta."); 
                         }
                     }
                     
-                    // 3. LOOP OBRIGATÓRIO PARA O E-MAIL COM VALIDAÇÃO DE DOMÍNIO
                     while (!emailValido) {
-                        email = prompt(`OBRIGATÓRIO: Por favor, digite seu E-MAIL:`, "");
-                        if (email === null) { // Se o usuário clicar em Cancelar
+                        email = prompt(`OBRIGATÓRIO: Por favor, digite seu E-MAIL ):`, "");
+                        if (email === null) {
                             alert("O e-mail corporativo é necessário para usar a ferramenta.");
-                            continue; // Volta para o início do loop
+                            continue;
                         }
-                        // Normaliza o e-mail e verifica se termina com o domínio permitido
                         if (email.toLowerCase().trim().endsWith(DOMINIO_PERMITIDO)) {
-                            emailValido = true; // Condição para sair do loop
+                            emailValido = true;
                         } else {
-                            alert(`Acesso negado. Por favor, use um e-mail com o domínio correto.`);
+                            alert(`Acesso negado. Por favor, use um e-mail com o domínio.`);
                         }
                     }
 
-                    // 4. GUARDA OS NOVOS DADOS NO NAVEGADOR
                     dadosAtendente = { nome: nome.trim(), email: email.trim(), timestamp: Date.now() };
                     localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
                     alert("Obrigado! Acesso liberado pelas próximas 24 horas.");
+                    
+                    // CHAMA A SAUDAÇÃO APÓS A NOVA IDENTIFICAÇÃO
+                    enviarSaudacaoInicial(dadosAtendente.nome);
 
                 } else {
-                    // Se os dados ainda são válidos, apenas carrega para a variável
                     dadosAtendente = dadosSalvos;
                     console.log(`Bem-vindo(a) de volta, ${dadosAtendente.nome}!`);
+                    
+                    // CHAMA A SAUDAÇÃO AO CARREGAR A PÁGINA PARA UM USUÁRIO JÁ IDENTIFICADO
+                    enviarSaudacaoInicial(dadosAtendente.nome);
                 }
             }
 
@@ -247,7 +264,7 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
                 messageElement.innerHTML = message;
-                if (sender === 'bot' && !message.includes("Olá! Sou o assistente")) {
+                if (sender === 'bot' && !message.includes("Sou o assistente")) {
                     const copyBtn = document.createElement('button');
                     copyBtn.classList.add('copy-btn');
                     copyBtn.innerHTML = '📋';
@@ -316,7 +333,7 @@ Em caso de dúvida ou recorrência, sigam com o atendimento padrão e sinalizem 
             function handleSendMessage(text) {
                 if (!text || !text.trim()) return;
                 let perguntaFinal = text;
-                // Comentado para manter a lógica original do Código 1, mas sem uso conforme Código 2
+                // Comentado para manter a lógica original do Código 1, mas sem uso
                 /*
                 const textoNormalizado = text.toLowerCase().trim();
                 if (perguntasDeContinuacao.some(frase => textoNormalizado.includes(frase)) && ultimoTopico) {
