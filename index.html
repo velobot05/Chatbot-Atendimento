@@ -8,459 +8,175 @@
     <style>
         /* --- DEFINIÇÃO DAS CORES (TEMAS) --- */
         :root {
-            --cor-fundo: #f0f4f8;
-            --cor-container: #ffffff;
-            --cor-caixa-chat: #eaf2ff;
-            --cor-texto-principal: #333;
-            --cor-borda: #d1e3f0;
-            --cor-azul-claro: #a7d9ee;
-            --cor-azul-medio: #007BFF;
-            --cor-azul-escuro: #0056b3;
-            --cor-balao-bot: #D6E4FF;
+            --cor-fundo: #f0f4f8; --cor-container: #ffffff; --cor-caixa-chat: #eaf2ff;
+            --cor-texto-principal: #333; --cor-borda: #d1e3f0; --cor-azul-claro: #a7d9ee;
+            --cor-azul-medio: #007BFF; --cor-azul-escuro: #0056b3; --cor-balao-bot: #D6E4FF;
             --cor-sombra: rgba(0, 0, 0, 0.1);
         }
-
         body.dark-theme {
-            --cor-fundo: #121212;
-            --cor-container: #1e1e1e;
-            --cor-caixa-chat: #2a2a2a;
-            --cor-texto-principal: #e0e0e0;
-            --cor-borda: #334a5f;
-            --cor-azul-claro: #334a5f;
-            --cor-azul-medio: #3a9bff;
-            --cor-azul-escuro: #87c3ff;
-            --cor-balao-bot: #2c3e50;
+            --cor-fundo: #121212; --cor-container: #1e1e1e; --cor-caixa-chat: #2a2a2a;
+            --cor-texto-principal: #e0e0e0; --cor-borda: #334a5f; --cor-azul-claro: #334a5f;
+            --cor-azul-medio: #3a9bff; --cor-azul-escuro: #87c3ff; --cor-balao-bot: #2c3e50;
             --cor-sombra: rgba(255, 255, 255, 0.05);
         }
-
         body {
-            font-family: 'Arial', sans-serif;
-            background: var(--cor-fundo);
-            color: var(--cor-texto-principal);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            font-family: 'Arial', sans-serif; background: var(--cor-fundo); color: var(--cor-texto-principal);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;
             transition: background-color 0.3s, color 0.3s;
         }
-
         .app-wrapper {
-            display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            width: 100%;
-            max-width: 1400px;
-            height: 95vh;
-            gap: 20px;
-            position: relative;
-            z-index: 1;
+            display: grid; grid-template-columns: 300px 1fr 300px; width: 100%;
+            max-width: 1400px; height: 95vh; gap: 20px;
         }
-
         .panel {
-            background: var(--cor-container);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px var(--cor-sombra);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--cor-borda);
-            overflow-y: auto;
-            transition: background-color 0.3s, border-color 0.3s;
+            background: var(--cor-container); border-radius: 12px;
+            box-shadow: 0 4px 20px var(--cor-sombra); padding: 24px;
+            display: flex; flex-direction: column; border: 1px solid var(--cor-borda);
+            overflow-y: auto; transition: background-color 0.3s, border-color 0.3s;
         }
-
         .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--cor-azul-claro);
-            margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--cor-azul-claro); margin-bottom: 15px;
         }
-
         .panel h2 {
-            margin: 0;
-            padding-bottom: 10px;
-            font-size: 18px;
-            color: var(--cor-azul-escuro);
-            border-bottom: none;
+            margin: 0; padding-bottom: 10px; font-size: 18px;
+            color: var(--cor-azul-escuro); border-bottom: none;
         }
-
         #theme-switcher {
-            font-size: 24px;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            padding: 5px;
-            color: var(--cor-texto-principal);
+            font-size: 24px; cursor: pointer; background: transparent;
+            border: none; padding: 5px; color: var(--cor-texto-principal);
         }
-
-        #quick-questions-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
+        #quick-questions-list { list-style: none; padding: 0; margin: 0; }
         #quick-questions-list li {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            border: 1px solid var(--cor-borda);
+            padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+            transition: all 0.2s ease; font-size: 14px; border: 1px solid var(--cor-borda);
         }
-
-        #quick-questions-list li:hover {
-            background-color: var(--cor-azul-medio);
-            color: white;
-        }
-
+        #quick-questions-list li:hover { background-color: var(--cor-azul-medio); color: white; }
         .chat-container {
-            height: 100%;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
+            height: 100%; padding: 0; display: flex;
+            flex-direction: column; box-sizing: border-box;
         }
-
         .chat-box {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 16px;
-            background-color: var(--cor-caixa-chat);
-            border-radius: 8px;
+            flex-grow: 1; overflow-y: auto; padding: 16px;
+            background-color: var(--cor-caixa-chat); border-radius: 8px;
             transition: background-color 0.3s;
         }
-
         .input-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 0 24px;
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 15px; padding: 0 24px;
         }
-
         #user-input {
-            flex-grow: 1;
-            padding: 14px;
-            border-radius: 24px;
-            border: 1px solid var(--cor-borda);
-            background-color: var(--cor-container);
-            color: var(--cor-texto-principal);
-            font-size: 16px;
-            outline: none;
+            flex-grow: 1; padding: 14px; border-radius: 24px;
+            border: 1px solid var(--cor-borda); background-color: var(--cor-container);
+            color: var(--cor-texto-principal); font-size: 16px; outline: none;
             transition: background-color 0.3s, color 0.3s;
         }
-
         #user-input:focus {
             border-color: var(--cor-azul-medio);
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
         }
-
         .message {
-            position: relative;
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 85%;
-            word-wrap: break-word;
+            position: relative; margin-bottom: 15px; padding: 12px 16px;
+            border-radius: 18px; max-width: 85%; word-wrap: break-word;
         }
-
         .user-msg {
             background: linear-gradient(90deg, #0052CC 0%, #0066FF 100%);
-            color: #FFFFFF;
-            margin-left: auto;
+            color: #FFFFFF; margin-left: auto;
         }
-
         .bot-msg {
-            background: var(--cor-balao-bot);
-            color: var(--cor-texto-principal);
+            background: var(--cor-balao-bot); color: var(--cor-texto-principal);
             margin-right: auto;
-            padding-right: 40px;
-            transition: background-color 0.3s, color 0.3s;
         }
-
         #quick-actions-container {
-            padding: 15px 0;
-            border-top: 1px solid var(--cor-borda);
-            border-bottom: 1px solid var(--cor-borda);
-            margin: 15px 0;
+            padding: 15px 0; border-top: 1px solid var(--cor-borda);
+            border-bottom: 1px solid var(--cor-borda); margin: 15px 0;
         }
-
-        #quick-actions-container h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-
-        .quick-actions-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
+        #quick-actions-container h3 { margin: 0 0 10px 0; font-size: 16px; }
+        .quick-actions-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         button.quick-action {
-            flex-grow: 1;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #333;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: left;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
+            flex-grow: 1; background-color: #f8f9fa; border: 1px solid #dee2e6;
+            color: #333; border-radius: 8px; padding: 10px; text-align: left;
+            cursor: pointer; font-size: 14px; transition: all 0.2s ease;
         }
-
-        button.quick-action:hover {
-            background-color: #e9ecef;
-            border-color: #adb5bd;
-        }
-
-        .news-item {
-            border-bottom: 1px solid var(--cor-borda);
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-
-        .news-item:last-child {
-            border-bottom: none;
-        }
-
-        .news-item h4 {
-            margin: 0 0 5px 0;
-        }
-
-        .news-item small {
-            color: #777;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .news-item p {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .news-item a {
-            color: var(--cor-azul-medio);
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .news-item a:hover {
-            text-decoration: underline;
-        }
-
-        .loader-container {
-            display: flex;
-            margin-bottom: 15px;
-        }
-
+        button.quick-action:hover { background-color: #e9ecef; border-color: #adb5bd; }
+        .loader-container { display: flex; margin-bottom: 15px; }
         .typing-bubble {
-            background: var(--cor-balao-bot);
-            padding: 14px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
+            background: var(--cor-balao-bot); padding: 14px; border-radius: 18px;
+            display: flex; align-items: center;
         }
-
         .typing-dot {
-            width: 8px;
-            height: 8px;
-            margin: 0 2px;
-            background-color: #888;
-            border-radius: 50%;
-            animation: typing-animation 1.4s infinite;
+            width: 8px; height: 8px; margin: 0 2px; background-color: #888;
+            border-radius: 50%; animation: typing-animation 1.4s infinite;
         }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing-animation {
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-6px); }
         }
-
         .copy-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            color: var(--cor-texto-principal);
-            opacity: 0.3;
-            transition: opacity 0.2s ease;
+            position: absolute; top: 5px; right: -35px; background: transparent;
+            border: none; cursor: pointer; font-size: 18px;
+            color: var(--cor-texto-principal); opacity: 0.3; transition: opacity 0.2s ease;
         }
-
-        .bot-msg:hover .copy-btn {
-            opacity: 1;
+        .bot-msg:hover .copy-btn { opacity: 1; }
+        .suggestion-buttons-container {
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 8px; margin-top: 8px; margin-bottom: 10px;
+            padding-left: 20px;
         }
-
-        /* --- ESTILOS PARA O MODAL DE IDENTIFICAÇÃO --- */
+        .suggestion-btn {
+            background-color: #ffffff; border: 1px solid var(--cor-azul-medio);
+            color: var(--cor-azul-medio); padding: 8px 12px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .suggestion-btn:hover { background-color: var(--cor-azul-medio); color: white; }
         #identificacao-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 50, 100, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 50, 100, 0.85); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(5px);
         }
-
-        #identificacao-overlay.hidden {
-            display: none;
-        }
-
+        #identificacao-overlay.hidden { display: none; }
         #identificacao-box {
-            background: var(--cor-container);
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 90%;
-            max-width: 450px;
+            background: var(--cor-container); padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3); text-align: center;
+            width: 90%; max-width: 450px;
         }
-
-        #identificacao-box h2 {
-            margin-top: 0;
-            color: var(--cor-azul-escuro);
-        }
-
-        #identificacao-form .input-group {
-            text-align: left;
-            margin-bottom: 15px;
-        }
-
-        #identificacao-form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        #identificacao-form input {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        #identificacao-submit {
-            padding: 12px 20px;
-            width: 100%;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            background-color: var(--cor-azul-medio);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        #identificacao-error {
-            color: #ff4d4d;
-            margin-top: 15px;
-            display: none;
-        }
-
-        /* --- ESTILOS PARA O MODAL DE ALERTA --- */
         #alert-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 20, 40, 0.75);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-            opacity: 1;
-            transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 20, 40, 0.75); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(4px);
         }
-
-        #alert-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #alert-overlay.hidden { opacity: 0; pointer-events: none; }
         #alert-box {
-            background: var(--cor-container);
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 90%;
-            max-width: 550px;
-            border-top: 5px solid #ffc107;
-        }
-
-        #alert-box h2 {
-            margin-top: 0;
-            color: #ffc107;
-            font-size: 24px;
-        }
-
-        #alert-content {
-            text-align: left;
-            margin: 20px 0;
-            max-height: 40vh;
-            overflow-y: auto;
-        }
-
-        #alert-close-btn {
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            background-color: var(--cor-azul-medio);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 10px;
+            background: var(--cor-container); padding: 30px 40px; border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3); text-align: center;
+            width: 90%; max-width: 550px; border-top: 5px solid #ffc107;
         }
     </style>
 </head>
 <body>
-    <!-- Modal de Identificação -->
     <div id="identificacao-overlay">
         <div id="identificacao-box">
             <h2>Bem-vindo(a) ao Painel</h2>
             <p>Por favor, identifique-se para continuar.</p>
             <form id="identificacao-form">
-                <div class="input-group">
+                <div class="input-group" style="text-align: left; margin-bottom: 15px;">
                     <label for="nome-input">Nome Completo</label>
-                    <input type="text" id="nome-input" required>
+                    <input type="text" id="nome-input" required style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;">
                 </div>
-                <div class="input-group">
+                <div class="input-group" style="text-align: left; margin-bottom: 15px;">
                     <label for="email-input">E-mail Corporativo</label>
-                    <input type="email" id="email-input" required>
+                    <input type="email" id="email-input" required style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;">
                 </div>
-                <button type="submit" id="identificacao-submit">Entrar</button>
+                <button type="submit" id="identificacao-submit" style="padding: 12px 20px; width: 100%; font-size: 16px; font-weight: bold; border: none; background-color: var(--cor-azul-medio); color: white; border-radius: 8px; cursor: pointer; margin-top: 10px;">Entrar</button>
             </form>
-            <p id="identificacao-error">Acesso permitido apenas para e-mails corporativos!!</p>
+            <p id="identificacao-error" style="display:none; color: #ff4d4d; margin-top: 15px;">Acesso permitido apenas para e-mails @velotax.com.br!</p>
         </div>
     </div>
 
-    <!-- Modal de Alerta -->
     <div id="alert-overlay" class="hidden">
         <div id="alert-box">
             <h2>⚠️ Comunicado Importante ⚠️</h2>
@@ -469,20 +185,17 @@
         </div>
     </div>
 
-    <!-- Interface Principal -->
     <div class="app-wrapper">
         <div id="sidebar" class="panel">
-            <div class="panel-header">
-                <h2>Perguntas Frequentes</h2>
-            </div>
+            <div class="panel-header"><h2>Perguntas Frequentes</h2></div>
             <ul id="quick-questions-list">
                 <li>Como funciona a portabilidade?</li>
                 <li>Quero fazer a exclusão da minha conta</li>
                 <li>Problema no login do app</li>
                 <li>Informação sobre os valores da restituição</li>
             </ul>
-            <br><h4>Clique na prancheta 📋 ao lado da resposta do bot para copiar e formalizar sua resposta no chatgpt ou em outra I.A de sua preferência!!</h4><br><br><br><br><br><br><br><br><br><br>
-            <br><br><br><strong>Vale lembrar que, as informações presentes aqui, são de uso interno, para formular uma resposta ao cliente, não devemos enviar a resposta do bot ao cliente!!</strong>
+            <br><h4>Clique na prancheta 📋 ao lado da resposta do bot para copiar...</h4><br><br>
+            <strong>Vale lembrar que, as informações presentes aqui, são de uso interno...</strong>
         </div>
 
         <div class="chat-container panel">
@@ -506,22 +219,12 @@
         </div>
 
         <div id="news-panel" class="panel">
-            <div class="panel-header">
-                <h2>Notícias da Semana</h2>
-            </div>
+            <div class="panel-header"><h2>Notícias da Semana</h2></div>
             <div id="news-list">
                 <div class="news-item critical-alert">
                     <h4>MUDANÇA URGENTE NO PROCESSO</h4>
-                    <small>Publicado em: 30/06/2025</small>
-                    <p>Pessoal, novamente, importante dizer... é VITAL explicar ao cliente que deve nos pagar. O cliente está ligando preocupado com o valor, porém esse valor serve para quitação da Antecipação, e precisamos deixar isso claro, seja na ligação ou nos tickets.</p>
-                    <br>
-                    <br>
-                    Pessoal,<br>
-<strong>_________________________<BR></strong><br>
-Sempre que um cliente relatar o não recebimento de valores e, após análise, for identificado um bloqueio judicial sobre a conta ou o valor, devemos seguir o fluxo padronizado de atendimento.
-<br>🔹 Macro: <strong>Conta com bloqueio judicial</strong><br>
-📌 O que a macro comunica:<br>
-A macro informa que a conta ou valor está bloqueado por ordem judicial, reforça que não há relação com a Velotax, e orienta o cliente a verificar o processo diretamente com o órgão responsável.
+                    <small>Publicado em: 02/07/2025</small>
+                    <p>Pessoal, novamente, importante dizer... é VITAL explicar...</p>
                 </div>
             </div>
         </div>
@@ -529,7 +232,6 @@ A macro informa que a conta ou valor está bloqueado por ordem judicial, reforç
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- LÓGICA DE IDENTIFICAÇÃO E INICIALIZAÇÃO ---
             const identificacaoOverlay = document.getElementById('identificacao-overlay');
             const identificacaoForm = document.getElementById('identificacao-form');
             const appWrapper = document.querySelector('.app-wrapper');
@@ -537,17 +239,18 @@ A macro informa que a conta ou valor está bloqueado por ordem judicial, reforç
             function verificarIdentificacao() {
                 const DOMINIO_PERMITIDO = "@velotax.com.br";
                 const umDiaEmMs = 24 * 60 * 60 * 1000;
-                const dadosSalvosString = localStorage.getItem('dadosAtendenteChatbot');
                 let dadosSalvos = null;
-
-                if (dadosSalvosString) {
-                    dadosSalvos = JSON.parse(dadosSalvosString);
-                }
-
-                if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs)) {
-                    identificacaoOverlay.classList.remove('hidden');
+                try {
+                    const dadosSalvosString = localStorage.getItem('dadosAtendenteChatbot');
+                    if(dadosSalvosString) dadosSalvos = JSON.parse(dadosSalvosString);
+                } catch(e) { localStorage.removeItem('dadosAtendenteChatbot'); }
+                
+                if (!dadosSalvos || (Date.now() - dadosSalvos.timestamp > umDiaEmMs) || !dadosSalvos.email.endsWith(DOMINIO_PERMITIDO)) {
+                    identificacaoOverlay.style.display = 'flex';
+                    appWrapper.style.visibility = 'hidden';
                 } else {
-                    identificacaoOverlay.classList.add('hidden');
+                    identificacaoOverlay.style.display = 'none';
+                    appWrapper.style.visibility = 'visible';
                     iniciarBot(dadosSalvos);
                 }
             }
@@ -555,40 +258,33 @@ A macro informa que a conta ou valor está bloqueado por ordem judicial, reforç
             identificacaoForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 const DOMINIO_PERMITIDO = "@velotax.com.br";
-                const nomeInput = document.getElementById('nome-input');
-                const emailInput = document.getElementById('email-input');
+                const nome = document.getElementById('nome-input').value.trim();
+                const email = document.getElementById('email-input').value.trim().toLowerCase();
                 const errorMsg = document.getElementById('identificacao-error');
 
-                const nome = nomeInput.value.trim();
-                const email = emailInput.value.trim().toLowerCase();
-
                 if (nome && email && email.endsWith(DOMINIO_PERMITIDO)) {
-                    const dadosAtendente = { nome: nome, email: email, timestamp: Date.now() };
+                    const dadosAtendente = { nome, email, timestamp: Date.now() };
                     localStorage.setItem('dadosAtendenteChatbot', JSON.stringify(dadosAtendente));
-                    identificacaoOverlay.classList.add('hidden');
+                    identificacaoOverlay.style.display = 'none';
+                    appWrapper.style.visibility = 'visible';
                     iniciarBot(dadosAtendente);
                 } else {
                     errorMsg.style.display = 'block';
                 }
             });
 
-            // --- LÓGICA PARA O ALERTA DE NOTÍCIAS ---
             function verificarAlertasCriticos() {
                 const alertOverlay = document.getElementById('alert-overlay');
                 const alertContent = document.getElementById('alert-content');
                 const alertCloseBtn = document.getElementById('alert-close-btn');
-
                 const criticalAlertItem = document.querySelector('.news-item.critical-alert');
-
                 if (criticalAlertItem) {
                     const alertHtml = criticalAlertItem.innerHTML;
                     const foiVisto = sessionStorage.getItem('alertaVisto');
-
                     if (foiVisto !== alertHtml) {
                         alertContent.innerHTML = alertHtml;
                         alertOverlay.classList.remove('hidden');
                     }
-
                     alertCloseBtn.onclick = () => {
                         alertOverlay.classList.add('hidden');
                         sessionStorage.setItem('alertaVisto', alertHtml);
@@ -596,100 +292,98 @@ A macro informa que a conta ou valor está bloqueado por ordem judicial, reforç
                 }
             }
 
-            // --- FUNÇÃO QUE INICIA O BOT ---
             function iniciarBot(dadosAtendente) {
                 const chatBox = document.getElementById('chat-box');
                 const userInput = document.getElementById('user-input');
-                const quickQuestionsList = document.getElementById('quick-questions-list');
-                const quickActionsContainer = document.getElementById('quick-actions-container');
                 const themeSwitcher = document.getElementById('theme-switcher');
                 const body = document.body;
-                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbwt3IVSGHEzp-TpRrdMZwQnEFKTTVhAMAmzGDvb3mSlbFVu5T58cHPvMwT6X9-Ty0jHMw/exec";
 
-                function enviarSaudacaoInicial(nome) {
-                    const hora = new Date().getHours();
-                    let saudacao = 'Olá';
-                    if (hora >= 5 && hora < 12) {
-                        saudacao = 'Bom dia';
-                    } else if (hora >= 12 && hora < 18) {
-                        saudacao = 'Boa tarde';
-                    } else {
-                        saudacao = 'Boa noite';
-                    }
-                    const primeiroNome = nome.split(' ')[0];
-                    const mensagemCompleta = `${saudacao}, ${primeiroNome}! Sou o assistente de atendimento. Como posso ajudar?`;
-                    addMessage(mensagemCompleta, 'bot');
-                }
+                // !!! COLE A URL DA SUA NOVA IMPLANTAÇÃO AQUI !!!
+                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbxO4YXWNqxejiRYUcYO9nKd_CicYuVL6VwXLrP2PGcZgDYqMi6hgKNyGDZwYOM4tmU/exec";
 
                 function toggleLoader(show) {
                     const existingLoader = document.getElementById('loader');
-                    if (show) {
-                        if (!existingLoader) {
-                            const loaderElement = document.createElement('div');
-                            loaderElement.id = 'loader';
-                            loaderElement.classList.add('loader-container');
-                            loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-                            chatBox.appendChild(loaderElement);
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                        }
-                    } else {
-                        if (existingLoader) { existingLoader.remove(); }
+                    if (show && !existingLoader) {
+                        const loaderElement = document.createElement('div');
+                        loaderElement.id = 'loader';
+                        loaderElement.classList.add('loader-container');
+                        loaderElement.innerHTML = `<div class="message bot-msg" style="padding: 14px; display: inline-block; background: var(--cor-balao-bot);"><div style="display: flex; align-items: center; "><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite;"></div><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite .2s;"></div><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite .4s;"></div></div></div>`;
+                        chatBox.appendChild(loaderElement);
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    } else if (!show && existingLoader) {
+                        existingLoader.remove();
                     }
                 }
 
                 function addMessage(message, sender) {
+                    if (typeof message !== 'string' || !message) return;
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-                    messageElement.innerHTML = message;
-                    if (sender === 'bot' && !message.includes("Sou o assistente")) {
+                    messageElement.innerHTML = message.replace(/\n/g, '<br>');
+                    
+                    if (sender === 'bot' && !message.includes("assistente de atendimento") && !message.includes("múltiplos tópicos") && !message.includes("interesse em:")) {
                         const copyBtn = document.createElement('button');
                         copyBtn.classList.add('copy-btn');
                         copyBtn.innerHTML = '📋';
                         copyBtn.title = 'Copiar resposta';
-                        copyBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = message;
-                            navigator.clipboard.writeText(tempDiv.textContent || "").then(() => {
+                        copyBtn.onclick = () => {
+                            const textToCopy = messageElement.textContent.replace(/📋|✅/g, '').trim();
+                            navigator.clipboard.writeText(textToCopy).then(() => {
                                 copyBtn.innerHTML = '✅';
                                 setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
                             });
                         };
                         messageElement.appendChild(copyBtn);
+                        messageElement.style.paddingRight = '40px';
                     }
                     chatBox.appendChild(messageElement);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
-
+                
+                // --- NOVA FUNÇÃO PARA OS BOTÕES DE SUGESTÃO ---
                 function criarBotoesDeSugestao(sugestoes) {
-                    const containerBotoes = document.createElement('div');
-                    containerBotoes.classList.add('quick-actions-grid');
-                    containerBotoes.style.marginTop = '15px';
+                    if (!sugestoes || sugestoes.length === 0) return;
+                    const container = document.createElement('div');
+                    container.className = 'suggestion-buttons-container';
+
                     sugestoes.forEach(sugestao => {
-                        const botao = document.createElement('button');
-                        botao.classList.add('quick-action');
-                        botao.innerText = sugestao;
-                        botao.onclick = () => {
+                        const button = document.createElement('button');
+                        button.className = 'suggestion-btn';
+                        button.innerText = sugestao;
+                        button.onclick = () => {
                             handleSendMessage(sugestao);
+                            // Remove todos os outros botões de sugestão para limpar a interface
+                            document.querySelectorAll('.suggestion-buttons-container').forEach(el => el.remove());
                         };
-                        containerBotoes.appendChild(botao);
+                        container.appendChild(button);
                     });
-                    chatBox.appendChild(containerBotoes);
+                    chatBox.appendChild(container);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
-
+                
+                // --- FUNÇÃO DE BUSCA ATUALIZADA ---
                 async function buscarResposta(textoDaPergunta) {
                     if (!textoDaPergunta.trim()) return;
                     toggleLoader(true);
+                    
+                    if (!CHAT_API_URL || CHAT_API_URL === "COLE_A_SUA_URL_AQUI") {
+                        toggleLoader(false);
+                        addMessage("ERRO DE CONFIGURAÇÃO: A URL do script não foi definida no código do chatbot.", 'bot');
+                        return;
+                    }
+
                     try {
-                        const identificacaoFormatada = `${dadosAtendente.nome} (${dadosAtendente.email})`;
-                        const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(identificacaoFormatada)}`;
+                        const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(dadosAtendente.nome)}`;
                         const response = await fetch(url);
+                        if (!response.ok) throw new Error(`Erro de rede! Status: ${response.status}`);
                         const data = await response.json();
                         toggleLoader(false);
+                        
                         if (data.status === 'sucesso') {
                             addMessage(data.resposta, 'bot');
+                            // Após mostrar a resposta principal, verifica e mostra as sugestões se existirem
                             if (data.sugestoes && data.sugestoes.length > 0) {
+                                addMessage("Você também pode ter interesse em:", 'bot');
                                 criarBotoesDeSugestao(data.sugestoes);
                             }
                         } else {
@@ -698,57 +392,55 @@ A macro informa que a conta ou valor está bloqueado por ordem judicial, reforç
                     } catch (error) {
                         toggleLoader(false);
                         console.error("Erro ao buscar resposta:", error);
-                        addMessage("Erro de conexão com o sistema de respostas.", 'bot');
+                        addMessage("Erro de conexão com o sistema de respostas. Verifique o console (F12).", 'bot');
                     }
                 }
 
                 function handleSendMessage(text) {
                     if (!text || !text.trim()) return;
-                    let perguntaFinal = text;
+                    // Limpa sugestões antigas ao enviar nova mensagem
+                    document.querySelectorAll('.suggestion-buttons-container').forEach(el => el.remove());
                     addMessage(text, 'user');
-                    buscarResposta(perguntaFinal);
-                    if (userInput.value) { userInput.value = ''; }
+                    buscarResposta(text);
+                    if (userInput) userInput.value = '';
                 }
 
                 userInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleSendMessage(userInput.value);
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(userInput.value); }
                 });
-
-                quickQuestionsList.addEventListener('click', (e) => {
-                    if (e.target && e.target.tagName === 'LI') {
-                        handleSendMessage(e.target.innerText);
-                    }
+                
+                document.getElementById('sidebar').addEventListener('click', (e) => {
+                    if (e.target && e.target.tagName === 'LI') handleSendMessage(e.target.innerText);
                 });
-
-                quickActionsContainer.addEventListener('click', (e) => {
-                    if (e.target && e.target.classList.contains('quick-action')) {
-                        handleSendMessage(e.target.innerText);
-                    }
+                
+                document.querySelector('#quick-actions-container .quick-actions-grid').addEventListener('click', (e) => {
+                    if (e.target && e.target.classList.contains('quick-action')) handleSendMessage(e.target.innerText);
                 });
-
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    body.classList.add(savedTheme);
-                    if (savedTheme === 'dark-theme') {
-                        themeSwitcher.innerHTML = '🌙';
-                    }
-                }
 
                 themeSwitcher.addEventListener('click', () => {
                     body.classList.toggle('dark-theme');
-                    if (body.classList.contains('dark-theme')) {
-                        localStorage.setItem('theme', 'dark-theme');
+                    const isDark = body.classList.contains('dark-theme');
+                    themeSwitcher.innerHTML = isDark ? '🌙' : '☀️';
+                    localStorage.setItem('theme', isDark ? 'dark-theme' : 'light-theme');
+                });
+                
+                function setInitialTheme() {
+                    const savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'dark-theme') {
+                        body.classList.add('dark-theme');
                         themeSwitcher.innerHTML = '🌙';
                     } else {
-                        localStorage.removeItem('theme');
+                        body.classList.remove('dark-theme');
                         themeSwitcher.innerHTML = '☀️';
                     }
-                });
-
-                enviarSaudacaoInicial(dadosAtendente.nome);
+                }
+                
+                const primeiroNome = dadosAtendente.nome.split(' ')[0];
+                const hora = new Date().getHours();
+                let saudacao = (hora >= 5 && hora < 12) ? 'Bom dia' : (hora >= 12 && hora < 18) ? 'Boa tarde' : 'Boa noite';
+                addMessage(`${saudacao}, ${primeiroNome}! Sou o assistente de atendimento. Como posso ajudar?`, 'bot');
+                
+                setInitialTheme();
                 verificarAlertasCriticos();
             }
 
