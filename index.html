@@ -87,7 +87,12 @@
             background: var(--cor-balao-bot); color: var(--cor-texto-principal);
             margin-right: auto;
         }
-        .bot-msg img { max-width: 100%; border-radius: 10px; margin-top: 10px; display: block; }
+        .bot-msg img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: block;
+        }
         #quick-actions-container {
             padding: 15px 0; border-top: 1px solid var(--cor-borda);
             border-bottom: 1px solid var(--cor-borda); margin: 15px 0;
@@ -129,14 +134,9 @@
             background-color: #ffffff; border: 1px solid var(--cor-azul-medio);
             color: var(--cor-azul-medio); padding: 8px 12px; border-radius: 20px;
             cursor: pointer; font-weight: bold; font-size: 14px;
+            transition: all 0.2s ease;
         }
-        .feedback-btn {
-            background: transparent; border: 1px solid #aaa; color: #888;
-            padding: 2px 8px; border-radius: 12px; font-size: 12px; cursor: pointer;
-            margin-top: 10px; margin-left: auto; display: block;
-        }
-        .feedback-btn:hover { border-color: #ff4d4d; color: #ff4d4d; }
-        .feedback-btn:disabled { background: #f0f0f0; color: #aaa; border-color: #ddd; cursor: not-allowed; }
+        .suggestion-btn:hover { background-color: var(--cor-azul-medio); color: white; }
         #identificacao-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 50, 100, 0.85); display: flex; justify-content: center;
@@ -180,6 +180,7 @@
             <p id="identificacao-error" style="display:none; color: #ff4d4d; margin-top: 15px;">Acesso permitido apenas para e-mails @velotax.com.br!</p>
         </div>
     </div>
+
     <div id="alert-overlay" class="hidden">
         <div id="alert-box">
             <h2>⚠️ Comunicado Importante ⚠️</h2>
@@ -187,6 +188,7 @@
             <button id="alert-close-btn">Eu li e estou Ciente</button>
         </div>
     </div>
+
     <div class="app-wrapper">
         <div id="sidebar" class="panel">
             <div class="panel-header"><h2>Perguntas Frequentes</h2></div>
@@ -199,6 +201,7 @@
             <br><h4>Clique na prancheta 📋 ao lado da resposta do bot para copiar...</h4><br><br>
             <strong>Vale lembrar que, as informações presentes aqui, são de uso interno...</strong>
         </div>
+
         <div class="chat-container panel">
             <div class="panel-header">
                 <h2 style="text-align: center; flex-grow: 1;">Assistente Virtual</h2>
@@ -218,6 +221,7 @@
                 <input type="text" id="user-input" placeholder="Digite sua pergunta aqui...">
             </div>
         </div>
+
         <div id="news-panel" class="panel">
             <div class="panel-header"><h2>Notícias da Semana</h2></div>
             <div id="news-list">
@@ -297,11 +301,9 @@
                 const userInput = document.getElementById('user-input');
                 const themeSwitcher = document.getElementById('theme-switcher');
                 const body = document.body;
-                let ultimaPergunta = '';
-                let ultimaLinhaDaFonte = null;
 
                 // !!! COLE A URL DA SUA IMPLANTAÇÃO MAIS RECENTE AQUI !!!
-                const CHAT_API_URL = "COLOQUE_SUA_URL_FINAL_AQUI";
+                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyIJttzRKp-A69tH1t43m1oZAKMT9L480noJkGHKO7TORYgdjPb-dBdirGzFcoVwoqdTQ/exec";
 
                 function toggleLoader(show) {
                     const existingLoader = document.getElementById('loader');
@@ -316,9 +318,9 @@
                         existingLoader.remove();
                     }
                 }
-                
-                function addMessage(message, sender, options = {}) {
-                    const { imageUrls = [], sourceRow = null } = options;
+
+                // --- FUNÇÃO ATUALIZADA PARA LIDAR COM TEXTO, IMAGENS E BOTÃO DE COPIAR ---
+                function addMessage(message, sender, imageUrls = []) {
                     const messageContainer = document.createElement('div');
                     messageContainer.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
 
@@ -339,7 +341,7 @@
                         });
                     }
                     
-                    if (sender === 'bot' && !message.includes("assistente de atendimento") && !message.includes("Você também pode ter interesse em:")) {
+                    if (sender === 'bot' && message && !message.includes("assistente de atendimento") && !message.includes("Você também pode ter interesse em:")) {
                         const copyBtn = document.createElement('button');
                         copyBtn.classList.add('copy-btn');
                         copyBtn.innerHTML = '📋';
@@ -353,47 +355,17 @@
                             });
                         };
                         messageContainer.appendChild(copyBtn);
-
-                        if (sourceRow) {
-                            const feedbackBtn = document.createElement('button');
-                            feedbackBtn.className = 'feedback-btn';
-                            feedbackBtn.innerText = '👎 Resposta Incorreta';
-                            feedbackBtn.onclick = (e) => {
-                                e.target.innerText = 'Enviando...';
-                                e.target.disabled = true;
-                                enviarFeedbackNegativo();
-                            };
-                            messageContainer.appendChild(feedbackBtn);
-                        }
                     }
                     
                     chatBox.appendChild(messageContainer);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
-
-                async function enviarFeedbackNegativo() {
-                    if (!ultimaPergunta || !ultimaLinhaDaFonte) return;
-                    const feedbackBtn = chatBox.querySelector('.feedback-btn:disabled');
-                    try {
-                        await fetch(CHAT_API_URL, {
-                            method: 'POST',
-                            mode: 'no-cors',
-                            body: JSON.stringify({
-                                action: 'logFeedback',
-                                question: ultimaPergunta,
-                                sourceRow: ultimaLinhaDaFonte,
-                                email: dadosAtendente.email 
-                            })
-                        });
-                        if(feedbackBtn) feedbackBtn.innerText = 'Feedback Enviado ✓';
-                    } catch (error) {
-                        console.error("Erro ao enviar feedback:", error);
-                        if(feedbackBtn) feedbackBtn.innerText = 'Erro ao Enviar';
-                    }
-                }
                 
+                // --- FUNÇÃO PARA CRIAR BOTÕES DE SUGESTÃO ---
                 function criarBotoesDeSugestao(sugestoes) {
                     if (!sugestoes || sugestoes.length === 0) return;
+                    
+                    addMessage("Você também pode ter interesse em:", 'bot');
                     
                     const container = document.createElement('div');
                     container.className = 'suggestion-buttons-container';
@@ -408,32 +380,27 @@
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
                 
+                // --- FUNÇÃO DE BUSCA ATUALIZADA PARA LIDAR COM TUDO ---
                 async function buscarResposta(textoDaPergunta) {
-                    ultimaPergunta = textoDaPergunta;
-                    ultimaLinhaDaFonte = null;
                     if (!textoDaPergunta.trim()) return;
                     toggleLoader(true);
                     
-                    if (!CHAT_API_URL || CHAT_API_URL === "COLOQUE_SUA_URL_AQUI") {
+                    if (!CHAT_API_URL || CHAT_API_URL === "COLE_A_SUA_URL_FINAL_AQUI") {
                         toggleLoader(false);
                         addMessage("ERRO DE CONFIGURAÇÃO: A URL do script não foi definida no código do chatbot.", 'bot');
                         return;
                     }
 
                     try {
-                        const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&email=${encodeURIComponent(dadosAtendente.email)}`;
+                        const url = `${CHAT_API_URL}?pergunta=${encodeURIComponent(textoDaPergunta)}&usuario=${encodeURIComponent(dadosAtendente.nome)}`;
                         const response = await fetch(url);
                         if (!response.ok) throw new Error(`Erro de rede! Status: ${response.status}`);
                         const data = await response.json();
                         toggleLoader(false);
                         
                         if (data.status === 'sucesso') {
-                            ultimaLinhaDaFonte = data.sourceRow;
-                            addMessage(data.resposta, 'bot', { imageUrls: data.imagens, sourceRow: data.sourceRow });
-                            if (data.sugestoes && data.sugestoes.length > 0) {
-                                addMessage("Você também pode ter interesse em:", 'bot');
-                                criarBotoesDeSugestao(data.sugestoes);
-                            }
+                            addMessage(data.resposta, 'bot', data.imagens);
+                            criarBotoesDeSugestao(data.sugestoes);
                         } else {
                             addMessage(data.mensagem, 'bot');
                         }
@@ -468,7 +435,7 @@
                     body.classList.toggle('dark-theme');
                     const isDark = body.classList.contains('dark-theme');
                     themeSwitcher.innerHTML = isDark ? '🌙' : '☀️';
-                    localStorage.setItem('theme', isDark ? 'dark-theme' : 'light-theme');
+                    localStorage.setItem('theme', isDark ? 'dark-theme' : 'light');
                 });
                 
                 function setInitialTheme() {
