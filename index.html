@@ -6,7 +6,6 @@
     <title>Painel Interno com ChatBot</title>
     <link rel="icon" type="image/png" href="https://github.com/velobot05/Chatbot-Atendimento/blob/main/imagens/logo.png-removebg-preview%20(1).png?raw=true">
     <style>
-        /* --- DEFINIÇÃO DAS CORES (TEMAS) --- */
         :root {
             --cor-fundo: #f0f4f8; --cor-container: #ffffff; --cor-caixa-chat: #eaf2ff;
             --cor-texto-principal: #333; --cor-borda: #d1e3f0; --cor-azul-claro: #a7d9ee;
@@ -88,6 +87,12 @@
             background: var(--cor-balao-bot); color: var(--cor-texto-principal);
             margin-right: auto;
         }
+        .bot-msg img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: block;
+        }
         #quick-actions-container {
             padding: 15px 0; border-top: 1px solid var(--cor-borda);
             border-bottom: 1px solid var(--cor-borda); margin: 15px 0;
@@ -123,8 +128,7 @@
         .bot-msg:hover .copy-btn { opacity: 1; }
         .suggestion-buttons-container {
             display: flex; flex-direction: column; align-items: flex-start;
-            gap: 8px; margin-top: 8px; margin-bottom: 10px;
-            padding-left: 20px;
+            gap: 8px; margin-top: 8px; margin-bottom: 10px; padding-left: 20px;
         }
         .suggestion-btn {
             background-color: #ffffff; border: 1px solid var(--cor-azul-medio);
@@ -164,11 +168,11 @@
             <p>Por favor, identifique-se para continuar.</p>
             <form id="identificacao-form">
                 <div class="input-group" style="text-align: left; margin-bottom: 15px;">
-                    <label for="nome-input">Nome Completo</label>
+                    <label for="nome-input" style="display: block; margin-bottom: 5px; font-weight: bold;">Nome Completo</label>
                     <input type="text" id="nome-input" required style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;">
                 </div>
                 <div class="input-group" style="text-align: left; margin-bottom: 15px;">
-                    <label for="email-input">E-mail Corporativo</label>
+                    <label for="email-input" style="display: block; margin-bottom: 5px; font-weight: bold;">E-mail Corporativo</label>
                     <input type="email" id="email-input" required style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;">
                 </div>
                 <button type="submit" id="identificacao-submit" style="padding: 12px 20px; width: 100%; font-size: 16px; font-weight: bold; border: none; background-color: var(--cor-azul-medio); color: white; border-radius: 8px; cursor: pointer; margin-top: 10px;">Entrar</button>
@@ -298,7 +302,7 @@
                 const themeSwitcher = document.getElementById('theme-switcher');
                 const body = document.body;
 
-                // !!! COLE A URL DA SUA NOVA IMPLANTAÇÃO AQUI !!!
+                // !!! COLE A URL DA SUA IMPLANTAÇÃO MAIS RECENTE AQUI !!!
                 const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyIJttzRKp-A69tH1t43m1oZAKMT9L480noJkGHKO7TORYgdjPb-dBdirGzFcoVwoqdTQ/exec";
 
                 function toggleLoader(show) {
@@ -307,7 +311,7 @@
                         const loaderElement = document.createElement('div');
                         loaderElement.id = 'loader';
                         loaderElement.classList.add('loader-container');
-                        loaderElement.innerHTML = `<div class="message bot-msg" style="padding: 14px; display: inline-block; background: var(--cor-balao-bot);"><div style="display: flex; align-items: center; "><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite;"></div><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite .2s;"></div><div style="width: 8px; height: 8px; margin: 0 2px; background-color: #888; border-radius: 50%; animation: typing-animation 1.4s infinite .4s;"></div></div></div>`;
+                        loaderElement.innerHTML = `<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
                         chatBox.appendChild(loaderElement);
                         chatBox.scrollTop = chatBox.scrollHeight;
                     } else if (!show && existingLoader) {
@@ -315,58 +319,73 @@
                     }
                 }
 
-                function addMessage(message, sender) {
-                    if (typeof message !== 'string' || !message) return;
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
-                    messageElement.innerHTML = message.replace(/\n/g, '<br>');
+                // --- FUNÇÃO ATUALIZADA PARA LIDAR COM TEXTO, IMAGENS E BOTÃO DE COPIAR ---
+                function addMessage(message, sender, imageUrls = []) {
+                    const messageContainer = document.createElement('div');
+                    messageContainer.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
+
+                    const textElement = document.createElement('div');
+                    if (message) {
+                         textElement.innerHTML = message.replace(/\n/g, '<br>');
+                    }
+                    messageContainer.appendChild(textElement);
+
+                    if (sender === 'bot' && Array.isArray(imageUrls) && imageUrls.length > 0) {
+                        imageUrls.forEach(url => {
+                            if (url) {
+                                const imageElement = document.createElement('img');
+                                imageElement.src = url;
+                                imageElement.alt = "Imagem de suporte";
+                                messageContainer.appendChild(imageElement);
+                            }
+                        });
+                    }
                     
-                    if (sender === 'bot' && !message.includes("assistente de atendimento") && !message.includes("múltiplos tópicos") && !message.includes("interesse em:")) {
+                    if (sender === 'bot' && message && !message.includes("assistente de atendimento") && !message.includes("Você também pode ter interesse em:")) {
                         const copyBtn = document.createElement('button');
                         copyBtn.classList.add('copy-btn');
                         copyBtn.innerHTML = '📋';
                         copyBtn.title = 'Copiar resposta';
+                        messageContainer.style.paddingRight = '40px';
                         copyBtn.onclick = () => {
-                            const textToCopy = messageElement.textContent.replace(/📋|✅/g, '').trim();
+                            const textToCopy = textElement.textContent.trim();
                             navigator.clipboard.writeText(textToCopy).then(() => {
                                 copyBtn.innerHTML = '✅';
                                 setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
                             });
                         };
-                        messageElement.appendChild(copyBtn);
-                        messageElement.style.paddingRight = '40px';
+                        messageContainer.appendChild(copyBtn);
                     }
-                    chatBox.appendChild(messageElement);
+                    
+                    chatBox.appendChild(messageContainer);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
                 
-                // --- NOVA FUNÇÃO PARA OS BOTÕES DE SUGESTÃO ---
+                // --- FUNÇÃO PARA CRIAR BOTÕES DE SUGESTÃO ---
                 function criarBotoesDeSugestao(sugestoes) {
                     if (!sugestoes || sugestoes.length === 0) return;
+                    
+                    addMessage("Você também pode ter interesse em:", 'bot');
+                    
                     const container = document.createElement('div');
                     container.className = 'suggestion-buttons-container';
-
                     sugestoes.forEach(sugestao => {
                         const button = document.createElement('button');
                         button.className = 'suggestion-btn';
                         button.innerText = sugestao;
-                        button.onclick = () => {
-                            handleSendMessage(sugestao);
-                            // Remove todos os outros botões de sugestão para limpar a interface
-                            document.querySelectorAll('.suggestion-buttons-container').forEach(el => el.remove());
-                        };
+                        button.onclick = () => handleSendMessage(sugestao);
                         container.appendChild(button);
                     });
                     chatBox.appendChild(container);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
                 
-                // --- FUNÇÃO DE BUSCA ATUALIZADA ---
+                // --- FUNÇÃO DE BUSCA ATUALIZADA PARA LIDAR COM TUDO ---
                 async function buscarResposta(textoDaPergunta) {
                     if (!textoDaPergunta.trim()) return;
                     toggleLoader(true);
                     
-                    if (!CHAT_API_URL || CHAT_API_URL === "COLE_A_SUA_URL_AQUI") {
+                    if (!CHAT_API_URL || CHAT_API_URL === "COLE_A_SUA_URL_FINAL_AQUI") {
                         toggleLoader(false);
                         addMessage("ERRO DE CONFIGURAÇÃO: A URL do script não foi definida no código do chatbot.", 'bot');
                         return;
@@ -380,12 +399,8 @@
                         toggleLoader(false);
                         
                         if (data.status === 'sucesso') {
-                            addMessage(data.resposta, 'bot');
-                            // Após mostrar a resposta principal, verifica e mostra as sugestões se existirem
-                            if (data.sugestoes && data.sugestoes.length > 0) {
-                                addMessage("Você também pode ter interesse em:", 'bot');
-                                criarBotoesDeSugestao(data.sugestoes);
-                            }
+                            addMessage(data.resposta, 'bot', data.imagens);
+                            criarBotoesDeSugestao(data.sugestoes);
                         } else {
                             addMessage(data.mensagem, 'bot');
                         }
@@ -398,7 +413,6 @@
 
                 function handleSendMessage(text) {
                     if (!text || !text.trim()) return;
-                    // Limpa sugestões antigas ao enviar nova mensagem
                     document.querySelectorAll('.suggestion-buttons-container').forEach(el => el.remove());
                     addMessage(text, 'user');
                     buscarResposta(text);
@@ -421,7 +435,7 @@
                     body.classList.toggle('dark-theme');
                     const isDark = body.classList.contains('dark-theme');
                     themeSwitcher.innerHTML = isDark ? '🌙' : '☀️';
-                    localStorage.setItem('theme', isDark ? 'dark-theme' : 'light-theme');
+                    localStorage.setItem('theme', isDark ? 'dark-theme' : 'light');
                 });
                 
                 function setInitialTheme() {
