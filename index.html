@@ -13,33 +13,115 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1a252f; /* Azul escuro */
+            background-color: #1c2526; /* Azul escuro acinzentado para tristeza */
             font-family: 'Arial', sans-serif;
-            color: #ffffff;
+            color: #d3d3d3; /* Cinza claro para texto */
             text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Camada de chuva */
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(28, 37, 38, 0.8), rgba(28, 37, 38, 0.95));
+        }
+
+        /* Camada de névoa para efeito melancólico */
+        .fog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(100, 100, 100, 0.1);
+            filter: blur(10px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Gotas de chuva */
+        .drop {
+            position: absolute;
+            bottom: 100%;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(200, 200, 200, 0.5), rgba(255, 255, 255, 0.3));
+            animation: fall linear infinite;
+            transform-origin: top;
+        }
+
+        /* Gotas no fundo (menores, mais lentas, desfocadas) */
+        .drop.background {
+            width: 1px;
+            height: 20px;
+            opacity: 0.15;
+            filter: blur(2px);
+            animation-duration: 2.5s;
+        }
+
+        /* Gotas no meio (médias, velocidade moderada) */
+        .drop.midground {
+            width: 1.5px;
+            height: 40px;
+            opacity: 0.25;
+            filter: blur(1px);
+            animation-duration: 1.8s;
+        }
+
+        /* Gotas no foreground (maiores, mais rápidas) */
+        .drop.foreground {
+            width: 2.5px;
+            height: 60px;
+            opacity: 0.4;
+            filter: blur(0.5px);
+            animation-duration: 1.2s;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) translateX(0) rotate(5deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(100vh) translateX(15px) rotate(5deg); /* Inclinação para simular vento */
+                opacity: 0.05;
+            }
         }
 
         .maintenance-container {
             max-width: 600px;
             padding: 2rem;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .maintenance-container h1 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .maintenance-container p {
             font-size: 1.2rem;
             margin-bottom: 1.5rem;
             line-height: 1.6;
+            opacity: 0.9;
         }
 
         .emoji {
             font-size: 2rem;
             margin: 0 0.3rem;
-            opacity: 0.8;
+            opacity: 0.7;
+            color: #b0b0b0; /* Cinza para reforçar tristeza */
         }
 
         /* Responsivo */
@@ -55,14 +137,27 @@
             .emoji {
                 font-size: 1.5rem;
             }
+
+            .drop.background {
+                height: 15px;
+            }
+
+            .drop.midground {
+                height: 25px;
+            }
+
+            .drop.foreground {
+                height: 40px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="rain" id="rain"></div>
+    <div class="fog"></div>
     <div class="maintenance-container">
         <h1>Site em Manutenção <i class="fas fa-tools"></i></h1>
-        <p>Estamos realizando atualizações para aprimorar nossos serviços. Agradecemos sua compreensão e pedimos que retorne em breve.
-         qualquer dúvida chame o Gabriel!!</p>
+        <p>Estamos trabalhando para restaurar nossos serviços. Lamentamos o transtorno e agradecemos sua paciência. Volte em breve.</p>
         <div>
             <span class="emoji"><i class="fas fa-wrench"></i></span>
             <span class="emoji"><i class="fas fa-cog"></i></span>
@@ -70,7 +165,7 @@
     </div>
 
     <script>
-        // Efeito de fade-in ao carregar a página
+        // Efeito de fade-in para o conteúdo
         document.addEventListener('DOMContentLoaded', () => {
             const container = document.querySelector('.maintenance-container');
             container.style.opacity = 0;
@@ -80,8 +175,31 @@
                     clearInterval(fadeIn);
                 }
                 container.style.opacity = opacity;
-                opacity += 0.05;
+                opacity += 0.03;
             }, 50);
+
+            // Animação de chuva realista
+            const rainContainer = document.getElementById('rain');
+            function createRaindrop(layer) {
+                const drop = document.createElement('div');
+                drop.classList.add('drop', layer);
+                drop.style.left = `${Math.random() * 100}vw`;
+                drop.style.animationDuration = `${0.8 + Math.random() * 0.7}s`; // Velocidade variável
+                drop.style.transform = `rotate(${Math.random() * 10 - 5}deg)`; // Inclinação sutil
+                drop.style.opacity = Math.random() * 0.3 + 0.1; // Opacidade variável
+                drop.style.background = `linear-gradient(to bottom, rgba(${200 + Math.random() * 55}, ${200 + Math.random() * 55}, 255, 0.5), rgba(255, 255, 255, 0.3))`; // Variação de cor
+                rainContainer.appendChild(drop);
+
+                // Remove a gota após a animação
+                setTimeout(() => {
+                    drop.remove();
+                }, layer === 'background' ? 3000 : layer === 'midground' ? 2000 : 1500);
+            }
+
+            // Cria gotas em diferentes camadas
+            setInterval(() => createRaindrop('background'), 80);
+            setInterval(() => createRaindrop('midground'), 60);
+            setInterval(() => createRaindrop('foreground'), 40);
         });
     </script>
 </body>
