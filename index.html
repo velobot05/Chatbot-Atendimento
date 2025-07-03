@@ -130,13 +130,16 @@
             color: var(--cor-azul-medio); padding: 8px 12px; border-radius: 20px;
             cursor: pointer; font-weight: bold; font-size: 14px;
         }
-        .feedback-btn {
-            background: transparent; border: 1px solid #aaa; color: #888;
-            padding: 2px 8px; border-radius: 12px; font-size: 12px; cursor: pointer;
-            margin-top: 10px; margin-left: auto; display: block;
+        .feedback-container {
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 8px; margin-top: 10px;
         }
-        .feedback-btn:hover { border-color: #ff4d4d; color: #ff4d4d; }
-        .feedback-btn:disabled { background: #f0f0f0; color: #aaa; border-color: #ddd; cursor: not-allowed; }
+        .feedback-btn {
+            background: transparent; border: none; font-size: 18px;
+            cursor: pointer; opacity: 0.6; transition: opacity 0.2s;
+        }
+        .feedback-btn:hover { opacity: 1; }
+        .feedback-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         #identificacao-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 50, 100, 0.85); display: flex; justify-content: center;
@@ -197,7 +200,7 @@
                 <li>Informação sobre os valores da restituição</li>
             </ul>
             <br><h4>Clique na prancheta 📋 ao lado da resposta do bot para copiar...</h4><br><br>
-            <strong>Vale lembrar que, as informações presentes aqui, são de uso interno, nada dito pelo bot deve ser repassado ao cliente, pode reformular o que ele diz, mas não dizer diretamente!!</strong>
+            <strong>Vale lembrar que, as informações presentes aqui, são de uso interno...</strong>
         </div>
         <div class="chat-container panel">
             <div class="panel-header">
@@ -222,14 +225,9 @@
             <div class="panel-header"><h2>Notícias da Semana</h2></div>
             <div id="news-list">
                 <div class="news-item critical-alert">
-                    <h1>Noticias atualizadas!!</h1>
-                    <small>Publicado em: 03/07/2025</small>
-                    <p><h2>A liquidação antecipada com desconto já está disponível no app.</h2>
-                    <br>__________________________
-                  <br>
-                 <br><h3> Desligamos a Antecipação novamente, pessoal!
-                          vai ficar desligada, por enquanto!!</p></h3>
-
+                    <h4>MUDANÇA URGENTE NO PROCESSO</h4>
+                    <small>Publicado em: 02/07/2025</small>
+                    <p>Pessoal, novamente, importante dizer... é VITAL explicar...</p>
                 </div>
             </div>
         </div>
@@ -306,7 +304,7 @@
                 let ultimaLinhaDaFonte = null;
 
                 // !!! COLE A URL DA SUA IMPLANTAÇÃO MAIS RECENTE AQUI !!!
-                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyZ-HfIGD6y8SJKtJUZO-xnC9B1-C4BQh9ByG7IhYdRTBQFgqF0f6uL5F5NsOCBay0XGg/exec";
+                const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbzo0z6SUHZMzwtP3TSeUzNHVzTNyeJgqWY3c5qzoRJbzSj_omx7GuIKIzZ4cTsVWyYuwA/exec";
 
                 function toggleLoader(show) {
                     const existingLoader = document.getElementById('loader');
@@ -352,23 +350,48 @@
                         messageContainer.style.paddingRight = '40px';
                         copyBtn.onclick = () => {
                             const textToCopy = textElement.textContent.trim();
-                            navigator.clipboard.writeText(textToCopy).then(() => {
+                            
+                            // CORREÇÃO: Usando o método de fallback para copiar texto.
+                            const textArea = document.createElement("textarea");
+                            textArea.value = textToCopy;
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-9999px";
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
                                 copyBtn.innerHTML = '✅';
                                 setTimeout(() => { copyBtn.innerHTML = '📋'; }, 2000);
-                            });
+                            } catch (err) {
+                                console.error('Falha ao copiar texto: ', err);
+                            }
+                            document.body.removeChild(textArea);
                         };
                         messageContainer.appendChild(copyBtn);
 
                         if (sourceRow) {
-                            const feedbackBtn = document.createElement('button');
-                            feedbackBtn.className = 'feedback-btn';
-                            feedbackBtn.innerText = '👎 Resposta Incorreta';
-                            feedbackBtn.onclick = (e) => {
-                                e.target.innerText = 'Enviando...';
-                                e.target.disabled = true;
-                                enviarFeedbackNegativo();
+                            const feedbackContainer = document.createElement('div');
+                            feedbackContainer.className = 'feedback-container';
+
+                            const positiveBtn = document.createElement('button');
+                            positiveBtn.className = 'feedback-btn';
+                            positiveBtn.innerHTML = '👍';
+                            positiveBtn.title = 'Resposta útil';
+                            positiveBtn.onclick = () => {
+                                enviarFeedback('logFeedbackPositivo', feedbackContainer);
                             };
-                            messageContainer.appendChild(feedbackBtn);
+
+                            const negativeBtn = document.createElement('button');
+                            negativeBtn.className = 'feedback-btn';
+                            negativeBtn.innerHTML = '👎';
+                            negativeBtn.title = 'Resposta incorreta';
+                            negativeBtn.onclick = () => {
+                                enviarFeedback('logFeedbackNegativo', feedbackContainer);
+                            };
+
+                            feedbackContainer.appendChild(positiveBtn);
+                            feedbackContainer.appendChild(negativeBtn);
+                            messageContainer.appendChild(feedbackContainer);
                         }
                     }
                     
@@ -376,24 +399,24 @@
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
                 
-                async function enviarFeedbackNegativo() {
+                async function enviarFeedback(action, container) {
                     if (!ultimaPergunta || !ultimaLinhaDaFonte) return;
-                    const feedbackBtn = chatBox.querySelector('.feedback-btn:disabled');
+                    
+                    container.innerHTML = '<span style="font-size: 12px; color: #888;">Obrigado!</span>';
+
                     try {
                         await fetch(CHAT_API_URL, {
                             method: 'POST',
                             mode: 'no-cors', 
                             body: JSON.stringify({
-                                action: 'logFeedback',
+                                action: action,
                                 question: ultimaPergunta,
                                 sourceRow: ultimaLinhaDaFonte,
                                 email: dadosAtendente.email 
                             })
                         });
-                        if(feedbackBtn) feedbackBtn.innerText = 'Feedback Enviado ✓';
                     } catch (error) {
                         console.error("Erro ao enviar feedback:", error);
-                        if(feedbackBtn) feedbackBtn.innerText = 'Erro ao Enviar';
                     }
                 }
 
